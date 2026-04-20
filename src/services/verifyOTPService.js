@@ -34,6 +34,6 @@ exports.verifyOTP = async (identifier, otp) => {
   return {
     status: 200,
     message: "OTP verified successfully",
-    data:safeUser,
+    data:{userdetails :{safeUser}},
   };
 };
