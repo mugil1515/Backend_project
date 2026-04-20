@@ -5,5 +5,5 @@ const Controller = require('../controllers/verifyOTPController');
 const validate = require('../middlewares/validationMiddleware');
 const {verifyOtpValidator} = require('../validators/userValidators');
 
-router.post('/verify-otp',verifyOtpValidator,validate,Controller.verifyOTP);
+router.post('/verify-otp',verifyOtpValidator,validate,Controller.verifyOTPController);
 module.exports = router;

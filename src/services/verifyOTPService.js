@@ -1,39 +1,32 @@
 const repo = require('../repository/userRepository');
-const { isOTPExpired } = require('../utils/tokenUtil');
 
-exports.verifyOTP = async (identifier, otp) => {
-  const user = await repo.findUserByEmailOrPhone(identifier);
+exports.verifyEmailOTP = async (email, enteredOTP) => {
+  const user = await repo.findUserByEmailOrPhone(email);
 
   if (!user) {
     return { status: 404, message: "User not found" };
   }
 
   if (!user.otp) {
-    return { status: 400, message: "No OTP found. Please request again" };
+    return { status: 400, message: "OTP not requested" };
   }
 
-  if (user.otp !== otp) {
-    return { status: 400, message: "Invalid OTP" };
-  }
-
-  if (isOTPExpired(user.otp_expiry)) {
+  // 🔹 Check expiry first (better practice)
+  if (new Date() > new Date(user.otp_expiry)) {
     return { status: 400, message: "OTP expired" };
   }
 
+  // 🔹 Check OTP match
+  if (user.otp !== enteredOTP) {
+    return { status: 400, message: "Invalid OTP" };
+  }
+
+  // 🔹 Clear OTP after success
   await repo.updateOTP(user.id, null, null);
-   const safeUser = {
-    id: user.id,
-    firstname: user.firstname,
-    lastname: user.lastname,
-    email: user.email,
-    contactno: user.contactno,
-    address: user.address,
-    created_at: user.created_at
-  };
 
   return {
+    success: true,
     status: 200,
-    message: "OTP verified successfully",
-    data:{userdetails :{safeUser}},
+    message: "OTP verified successfully"
   };
 };

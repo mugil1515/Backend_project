@@ -1,24 +1,9 @@
-const userService=require('../services/verifyOTPService')
-exports.verifyOTP = async (req, res, next) => {
-  try {
-    const { identifier, otp } = req.body;
+const service=require('../services/verifyOTPService');
 
-    const result = await userService.verifyOTP(identifier, otp);
+exports.verifyOTPController = async (req, res, next) => {
+  const { identifier, otp } = req.body;
 
-    if (result.status !== 200) {
-      return res.status(result.status).json({
-        success: false,
-        message: result.message
-      });
-    }
+  const result = await service.verifyEmailOTP(identifier, otp);
 
-    return res.status(200).json({
-      success: true,
-      message: result.message,
-      data: result.data || null
-    });
-
-  } catch (error) {
-    next(error); 
-  }
+  res.json(result);
 };

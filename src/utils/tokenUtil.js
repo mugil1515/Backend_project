@@ -10,8 +10,16 @@ exports.comparePassword = async (password, hash) => {
 };
 
 exports.generateAccessToken = (user) => {
-  return jwt.sign(user, process.env.JWT_SECRET, { expiresIn: process.env.JWT_EXPIRES_IN});
-};
+  return jwt.sign(
+    {
+      id: user.id,
+      email: user.email,
+      contactno: user.contactno
+    },
+    process.env.JWT_SECRET,
+    { expiresIn: process.env.JWT_EXPIRES_IN  }
+  );
+};;
 
 exports.generateOTP = () => {
   return Math.floor(100000 + Math.random() * 900000).toString();

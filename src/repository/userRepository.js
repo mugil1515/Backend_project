@@ -26,3 +26,11 @@ exports.updateOTP = async (id, otp, expiry) => {
     [otp, expiry, id]
   );
 };
+exports.findUserById = async (id) => {
+  const [rows] = await db.query(
+    "SELECT id, firstname, lastname, email, contactno, address FROM users WHERE id = ?",
+    [id]
+  );
+
+  return rows[0]; // 🔥 return only user object
+};

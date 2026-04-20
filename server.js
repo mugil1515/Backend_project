@@ -6,6 +6,7 @@ const registerRoutes= require('./src/routes/registerRoutes');
 const loginRoutes=require('./src/routes/loginRoutes');
 const otpRoutes=require('./src/routes/otpRoutes');
 const verifyOTPRoutes=require('./src/routes/verifyOTPRoutes');
+const profileRoutes=require('./src/routes/profileRoutes')
 
 const http =require('http');
 const server =http.createServer(app);
@@ -24,7 +25,7 @@ const server =http.createServer(app);
 })()
 
 app.use(express.json());
-app.use('/api/v1', registerRoutes,loginRoutes,otpRoutes,verifyOTPRoutes);
+app.use('/api/v1', registerRoutes,loginRoutes,otpRoutes,verifyOTPRoutes,profileRoutes);
 const {errorHandler} = require('./src/middlewares/errorMiddleware');
 app.use(errorHandler);
 
