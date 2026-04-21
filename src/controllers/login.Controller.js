@@ -1,4 +1,4 @@
-const service =require('../services/loginService');
+const service =require('../services/login.Service');
 
 exports.login = async (req, res, next) => {
   try {

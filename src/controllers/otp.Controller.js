@@ -1,4 +1,4 @@
-const userService=require('../services/otpService')
+const userService=require('../services/otp.Service')
 
 exports.sendOTP = async (req, res, next) => {
   try {

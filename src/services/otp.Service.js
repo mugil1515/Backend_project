@@ -1,6 +1,6 @@
 const repo = require('../repository/userRepository');
 const { generateOTP, getOTPExpiryTime } = require('../utils/tokenUtil');
-const { sendEmail } = require('./emailService');
+const { sendEmail } = require('./email.Service');
 const { otpEmailTemplate } = require('../utils/emailotpTemplate');
 
 exports.sendOTP = async (identifier) => {

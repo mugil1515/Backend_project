@@ -1,4 +1,4 @@
-const service=require('../services/verifyOTPService');
+const service=require('../services/verifyOTP.Service');
 
 exports.verifyOTPController = async (req, res, next) => {
   const { identifier, otp } = req.body;

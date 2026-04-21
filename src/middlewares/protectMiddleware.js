@@ -12,7 +12,7 @@ exports.protect = (req, res, next) => {
     const jwt = require("jsonwebtoken");
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    req.user = decoded; // store user info
+    req.user = decoded; 
 
     next();
   } catch (err) {

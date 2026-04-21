@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 
-const Controller = require('../controllers/verifyOTPController');
+const Controller = require('../controllers/verifyOTP.Controller');
 const validate = require('../middlewares/validationMiddleware');
 const {verifyOtpValidator} = require('../validators/userValidators');
 

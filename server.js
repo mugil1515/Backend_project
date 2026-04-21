@@ -8,11 +8,11 @@ const pool = require('./src/config/db');
 const cookieParser = require('cookie-parser');
 const cors = require('cors');
 
-const registerRoutes = require('./src/routes/registerRoutes');
-const loginRoutes = require('./src/routes/loginRoutes');
-const otpRoutes = require('./src/routes/otpRoutes');
-const verifyOTPRoutes = require('./src/routes/verifyOTPRoutes');
-const profileRoutes = require('./src/routes/profileRoutes');
+const registerRoutes = require('./src/routes/register.Routes');
+const loginRoutes = require('./src/routes/login.Routes');
+const otpRoutes = require('./src/routes/otp.Routes');
+const verifyOTPRoutes = require('./src/routes/verifyOTP.Routes');
+const profileRoutes = require('./src/routes/profile.Routes');
 
 const http = require('http');
 const server = http.createServer(app);
