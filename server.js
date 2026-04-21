@@ -1,34 +1,55 @@
 const express = require('express');
 const app = express();
 require('dotenv').config();
-const pool=require('./src/config/db')
-const registerRoutes= require('./src/routes/registerRoutes');
-const loginRoutes=require('./src/routes/loginRoutes');
-const otpRoutes=require('./src/routes/otpRoutes');
-const verifyOTPRoutes=require('./src/routes/verifyOTPRoutes');
-const profileRoutes=require('./src/routes/profileRoutes')
 
-const http =require('http');
-const server =http.createServer(app);
+const pool = require('./src/config/db');
 
-(async()=>{
-    try{
-        const connection = await pool.getConnection();
+// 🔐 NEW: import cookie-parser & cors
+const cookieParser = require('cookie-parser');
+const cors = require('cors');
 
-        await connection.ping();
-        connection.release();
+const registerRoutes = require('./src/routes/registerRoutes');
+const loginRoutes = require('./src/routes/loginRoutes');
+const otpRoutes = require('./src/routes/otpRoutes');
+const verifyOTPRoutes = require('./src/routes/verifyOTPRoutes');
+const profileRoutes = require('./src/routes/profileRoutes');
 
-        console.log('✅ Database Connection Success')
-    }catch(err){
-        console.log('Data Base Connection Error:',err.message)
-    }
-})()
+const http = require('http');
+const server = http.createServer(app);
 
+// ✅ DB Connection check
+(async () => {
+  try {
+    const connection = await pool.getConnection();
+    await connection.ping();
+    connection.release();
+
+    console.log('✅ Database Connection Success');
+  } catch (err) {
+    console.log('❌ Database Connection Error:', err.message);
+  }
+})();
+
+// 🔐 MIDDLEWARES
 app.use(express.json());
-app.use('/api/v1', registerRoutes,loginRoutes,otpRoutes,verifyOTPRoutes,profileRoutes);
-const {errorHandler} = require('./src/middlewares/errorMiddleware');
+
+// ✅ NEW: enable cookies
+app.use(cookieParser());
+
+// ✅ NEW: enable CORS with credentials
+app.use(cors({
+  origin: 'http://localhost:3000', // frontend URL
+  credentials: true
+}));
+
+// ✅ Routes
+app.use('/api/v1', registerRoutes, loginRoutes, otpRoutes, verifyOTPRoutes, profileRoutes);
+
+// ✅ Error handler
+const { errorHandler } = require('./src/middlewares/errorMiddleware');
 app.use(errorHandler);
 
+// ✅ Server
 const PORT = process.env.PORT;
 
 server.listen(PORT, () => {

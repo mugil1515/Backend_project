@@ -1,6 +1,5 @@
-const{comparePassword,generateAccessToken}=require('../utils/tokenUtil');
-const repo=require('../repository/userRepository');
-
+const { comparePassword, generateAccessToken } = require('../utils/tokenUtil');
+const repo = require('../repository/userRepository');
 
 exports.loginUser = async (data) => {
   const { identifier, password } = data;
@@ -21,17 +20,16 @@ exports.loginUser = async (data) => {
     return {
       success: false,
       status: 401,
-      message: "Invalid credentials"
+      message: "Invalid Password"
     };
   }
 
   const accessToken = generateAccessToken({ id: user.id });
 
-
   return {
     success: true,
     status: 200,
     message: "Login successful",
-    data: { accessToken }
+    accessToken,
   };
 };
