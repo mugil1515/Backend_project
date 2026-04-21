@@ -17,7 +17,6 @@ exports.protect = (req, res, next) => {
 
     console.log("DECODED USER:", decoded);
 
-    // 🔥 IMPORTANT FIX (THIS WAS MISSING)
     req.user = decoded;
 
     next();

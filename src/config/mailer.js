@@ -13,7 +13,7 @@ exports.sendEmail = async (to, subject, text, html) => {
     to,
     subject,
     text,
-    html, // 🔥 WITHOUT THIS → EMPTY MAIL PROBLEM
+    html, 
   });
 };
 

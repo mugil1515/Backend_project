@@ -32,5 +32,5 @@ exports.findUserById = async (id) => {
     [id]
   );
 
-  return rows[0]; // 🔥 return only user object
+  return rows[0]; 
 };

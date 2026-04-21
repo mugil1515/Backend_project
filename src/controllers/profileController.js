@@ -2,9 +2,9 @@ const repo = require("../repository/userRepository");
 
 exports.getProfile = async (req, res, next) => {
   try {
-    console.log("REQ.USER:", req.user); // 🔥 DEBUG
+    console.log("REQ.USER:", req.user); 
 
-    const userId = req.user.id; // ✅ ONLY THIS
+    const userId = req.user.id; 
 
     const user = await repo.findUserById(userId);
 

@@ -7,7 +7,7 @@ exports.sendEmail = async (to, subject, text, html) => {
       to,
       subject,
       text,
-      html // 🔥 ADD THIS
+      html 
     });
   } catch (err) {
     console.error("Email Error:", err.message);

@@ -11,17 +11,14 @@ exports.verifyEmailOTP = async (email, enteredOTP) => {
     return { status: 400, message: "OTP not requested" };
   }
 
-  // 🔹 Check expiry first (better practice)
   if (new Date() > new Date(user.otp_expiry)) {
     return { status: 400, message: "OTP expired" };
   }
 
-  // 🔹 Check OTP match
   if (user.otp !== enteredOTP) {
     return { status: 400, message: "Invalid OTP" };
   }
 
-  // 🔹 Clear OTP after success
   await repo.updateOTP(user.id, null, null);
 
   return {

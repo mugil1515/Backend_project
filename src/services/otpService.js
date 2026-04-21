@@ -20,10 +20,8 @@ exports.sendOTP = async (identifier) => {
   const otp = generateOTP();
   const expiry = getOTPExpiryTime(5);
 
-  // Save OTP in DB
   await repo.updateOTP(user.id, otp, expiry);
 
-  // Send OTP via email
   await sendEmail(
     user.email,
     "Your OTP Code",
