@@ -1,10 +1,10 @@
+// controllers/userController.js
+
 const repo = require("../repository/userRepository");
 
 exports.getProfile = async (req, res, next) => {
   try {
-    console.log("REQ.USER:", req.user); 
-
-    const userId = req.user.id; 
+    const userId = req.user.id; // 🔥 from decoded token
 
     const user = await repo.findUserById(userId);
 
@@ -15,7 +15,7 @@ exports.getProfile = async (req, res, next) => {
       });
     }
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       data: user
     });

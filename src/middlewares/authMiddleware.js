@@ -1,25 +1,24 @@
+// middleware/authMiddleware.js
+
 const jwt = require("jsonwebtoken");
 
 exports.protect = (req, res, next) => {
   try {
-    const authHeader = req.headers.authorization;
+    const token = req.cookies.token; // 🔥 read from cookie
 
-    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    if (!token) {
       return res.status(401).json({
         success: false,
-        message: "No token provided"
+        message: "No token in cookie"
       });
     }
 
-    const token = authHeader.split(" ")[1];
-
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-    console.log("DECODED USER:", decoded);
-
-    req.user = decoded;
+    req.user = decoded; // contains { id, email }
 
     next();
+
   } catch (error) {
     return res.status(401).json({
       success: false,

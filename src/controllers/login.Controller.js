@@ -1,24 +1,35 @@
-const service =require('../services/login.Service');
+// controllers/authController.js
+
+const service = require("../services/login.Service");
 
 exports.login = async (req, res, next) => {
   try {
-    const response = await service.loginUser(req.body);
-    if (!response.success) return next(response);
+    console.log("LOGIN BODY:", req.body);
 
-    // 🍪 Set cookie
+    const response = await service.loginUser(req.body);
+
+    console.log("LOGIN RESPONSE:", response);
+
+    if (!response.success) {
+      return res.status(400).json(response);
+    }
+
     res.cookie("token", response.accessToken, {
       httpOnly: true,
-      secure: false, // true in production (HTTPS)
       sameSite: "lax",
-      maxAge: 24 * 60 * 60 * 1000 // 1 day
+      secure: false
     });
 
-    res.status(response.status).json({
+    res.json({
       success: true,
       message: response.message
     });
 
   } catch (err) {
-    next(err);
+    console.log("LOGIN ERROR:", err);
+    res.status(500).json({
+      success: false,
+      message: "Internal server error"
+    });
   }
 };

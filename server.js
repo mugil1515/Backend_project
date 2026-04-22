@@ -4,7 +4,6 @@ require('dotenv').config();
 
 const pool = require('./src/config/db');
 
-// 🔐 NEW: import cookie-parser & cors
 const cookieParser = require('cookie-parser');
 const cors = require('cors');
 
@@ -13,44 +12,47 @@ const loginRoutes = require('./src/routes/login.Routes');
 const otpRoutes = require('./src/routes/otp.Routes');
 const verifyOTPRoutes = require('./src/routes/verifyOTP.Routes');
 const profileRoutes = require('./src/routes/profile.Routes');
+const logoutRoutes=require('./src/routes/logout.Routes');
 
 const http = require('http');
 const server = http.createServer(app);
 
-// ✅ DB Connection check
+// ================= DB CHECK =================
 (async () => {
   try {
     const connection = await pool.getConnection();
     await connection.ping();
     connection.release();
-
     console.log('✅ Database Connection Success');
   } catch (err) {
     console.log('❌ Database Connection Error:', err.message);
   }
 })();
 
-// 🔐 MIDDLEWARES
+// ================= MIDDLEWARES =================
 app.use(express.json());
-
-// ✅ NEW: enable cookies
 app.use(cookieParser());
 
-// ✅ NEW: enable CORS with credentials
+// 🔥 MUST be before routes
 app.use(cors({
-  origin: 'http://localhost:3000', // frontend URL
+  origin: 'http://localhost:3000',
   credentials: true
 }));
 
-// ✅ Routes
-app.use('/api/v1', registerRoutes, loginRoutes, otpRoutes, verifyOTPRoutes, profileRoutes);
+// ================= ROUTES =================
+app.use('/api/v1', registerRoutes);
+app.use('/api/v1', loginRoutes);
+app.use('/api/v1', otpRoutes);
+app.use('/api/v1', verifyOTPRoutes);
+app.use('/api/v1', profileRoutes);
+app.use('/api/v1',logoutRoutes);
 
-// ✅ Error handler
+// ================= ERROR HANDLER =================
 const { errorHandler } = require('./src/middlewares/errorMiddleware');
 app.use(errorHandler);
 
-// ✅ Server
-const PORT = process.env.PORT;
+// ================= SERVER =================
+const PORT = process.env.PORT ;
 
 server.listen(PORT, () => {
   console.log(`Server running on PORT ${PORT}`);
