@@ -1,4 +1,5 @@
 const repo = require('../repository/userRepository');
+const jwt = require('jsonwebtoken');
 
 exports.verifyEmailOTP = async (email, enteredOTP) => {
   const user = await repo.findUserByEmailOrPhone(email);
@@ -19,11 +20,20 @@ exports.verifyEmailOTP = async (email, enteredOTP) => {
     return { status: 400, message: "Invalid OTP" };
   }
 
+  // clear OTP after success
   await repo.updateOTP(user.id, null, null);
+
+  // generate token
+  const token = jwt.sign(
+    { id: user.id, email: user.email },
+    process.env.JWT_SECRET,
+    { expiresIn: process.env.JWT_EXPIRES_IN }
+  );
 
   return {
     success: true,
     status: 200,
-    message: "OTP verified successfully"
+    message: "OTP verified successfully",
+    token
   };
 };

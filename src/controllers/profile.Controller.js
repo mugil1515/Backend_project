@@ -4,21 +4,18 @@ const repo = require("../repository/userRepository");
 
 exports.getProfile = async (req, res, next) => {
   try {
-    const userId = req.user.id; // 🔥 from decoded token
+    const user = req.user;
 
-    const user = await repo.findUserById(userId);
+    // 🔥 REMOVE SENSITIVE FIELDS
+    const { password, otp, otp_expiry, ...safeUser } = user;
 
-    if (!user) {
-      return res.status(404).json({
-        success: false,
-        message: "User not found"
-      });
-    }
-
-    return res.status(200).json({
+    res.locals.data = {
       success: true,
-      data: user
-    });
+      message: "Profile fetched successfully",
+      user: safeUser
+    };
+
+    next();
 
   } catch (error) {
     next(error);
