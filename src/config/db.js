@@ -7,5 +7,14 @@ const pool=connection.createPool({
     port: process.env.DB_PORT,
     database: process.env.DB_NAME
 });
-
+(async () => {
+  try {
+    const connection = await pool.getConnection();
+    await connection.ping();
+    connection.release();
+    console.log('✅ Database Connection Success');
+  } catch (err) {
+    console.log('❌ Database Connection Error:', err.message);
+  }
+})();
 module.exports=pool;

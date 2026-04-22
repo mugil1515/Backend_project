@@ -20,10 +20,8 @@ exports.verifyEmailOTP = async (email, enteredOTP) => {
     return { status: 400, message: "Invalid OTP" };
   }
 
-  // clear OTP after success
   await repo.updateOTP(user.id, null, null);
 
-  // generate token
   const token = jwt.sign(
     { id: user.id, email: user.email },
     process.env.JWT_SECRET,

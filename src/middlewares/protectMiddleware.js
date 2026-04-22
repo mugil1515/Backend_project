@@ -2,20 +2,29 @@ const jwt = require("jsonwebtoken");
 const repo = require("../repository/userRepository");
 
 exports.protect = async (req, res, next) => {
-  const token = req.cookies.token;
-
-  if (!token) {
-    return res.status(401).json({
-      success: false,
-      message: "Not authorized, no token"
-    });
-  }
-
   try {
+    const token = req.cookies?.token;
+
+    // 🔥 BLOCK IF NO TOKEN
+    if (!token) {
+      return res.status(401).json({
+        success: false,
+        message: "Not authorized, no token"
+      });
+    }
+
+    // 🔥 VERIFY TOKEN
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-    // 🔥 FETCH REAL USER FROM DB (IMPORTANT FIX)
-    const user = await repo.findUserByEmailOrPhone(decoded.email);
+    if (!decoded || !decoded.id) {
+      return res.status(401).json({
+        success: false,
+        message: "Invalid token payload"
+      });
+    }
+
+    // 🔥 FETCH USER FROM DB
+    const user = await repo.findUserById(decoded.id);
 
     if (!user) {
       return res.status(401).json({
@@ -24,7 +33,7 @@ exports.protect = async (req, res, next) => {
       });
     }
 
-    // ✔ only DB user data goes forward
+    // 🔥 ATTACH USER
     req.user = user;
 
     next();
@@ -32,7 +41,7 @@ exports.protect = async (req, res, next) => {
   } catch (err) {
     return res.status(401).json({
       success: false,
-      message: "Invalid token"
+      message: "Unauthorized access"
     });
   }
 };
