@@ -1,15 +1,17 @@
 const authService = require('../services/forgetpassword.Service');
-exports.forgotPassword = async (req, res) => {
+
+// Forgot Password - Send OTP
+exports.forgotPassword = async (req, res, next) => {
   try {
     const result = await authService.forgotPassword(req.body.email);
     return res.status(result.status).json(result);
   } catch (error) {
-    return res.status(500).json({ message: error.message });
+    next(error); // pass error to global handler
   }
 };
 
-// Verify OTP (Forgot Password)
-exports.verifyForgotPasswordOTP = async (req, res) => {
+// Verify OTP
+exports.verifyForgotPasswordOTP = async (req, res, next) => {
   try {
     const result = await authService.verifyForgotPasswordOTP(
       req.body.email,
@@ -17,16 +19,16 @@ exports.verifyForgotPasswordOTP = async (req, res) => {
     );
     return res.status(result.status).json(result);
   } catch (error) {
-    return res.status(500).json({ message: error.message });
+    next(error);
   }
 };
 
 // Reset Password
-exports.resetPassword = async (req, res) => {
+exports.resetPassword = async (req, res, next) => {
   try {
     const result = await authService.resetPassword(req.body);
     return res.status(result.status).json(result);
   } catch (error) {
-    return res.status(500).json({ message: error.message });
+    next(error);
   }
 };

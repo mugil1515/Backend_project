@@ -24,13 +24,12 @@ exports.sendOTP = async (email) => {
     await repo.saveOTP(user.email, otp, expiry);
 
     // 🔹 4. Send Email using template
-    await sendEmail(
-      email,
-      "Your OTP Code",
-      `Your OTP is ${otp}. It is valid for 5 minutes.`,
-      otpEmailTemplate(otp)
-    );
-
+   await sendEmail(
+  email,
+  "Your OTP Code",
+  `Your OTP is ${otp}`,   // plain text fallback
+  otpEmailTemplate(otp)   // ✅ HTML template
+);
     // 🔹 5. Response
     return {
       success: true,

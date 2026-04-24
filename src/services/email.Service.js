@@ -1,12 +1,12 @@
 const transporter = require("../config/mailer");
 
-exports.sendEmail = async (to, subject, html, text = "") => {
+exports.sendEmail = async (to, subject, text, html) => {
   try {
     await transporter.sendMail({
       from: process.env.EMAIL_USER,
       to,
       subject,
-      text: text || "Please view this email in HTML format",
+      text,
       html,
     });
   } catch (err) {

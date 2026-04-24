@@ -16,8 +16,8 @@ exports.findUserByEmail = async (email) => {
 // 🔹 Find user by email or phone (login use)
 exports.findUserByEmailOrPhone = async (identifier) => {
   const [rows] = await db.query(
-    `SELECT id, firstname, lastname, email, contactno, address, password, otp, otp_expiry, email_verified 
-     FROM users 
+    `SELECT id, firstname, lastname, email, contactno, address, password, otp, otp_expiry 
+    From users
      WHERE email = ? OR contactno = ?`,
     [identifier, identifier]
   );
