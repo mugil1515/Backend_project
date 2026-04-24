@@ -21,7 +21,7 @@ exports.sendOTP = async (email) => {
     const expiry = getOTPExpiryTime(5); // 5 minutes
 
     // 🔹 3. Save OTP in DB
-    await repo.updateOTP(user.id, otp, expiry);
+    await repo.saveOTP(user.email, otp, expiry);
 
     // 🔹 4. Send Email using template
     await sendEmail(
