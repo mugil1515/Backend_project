@@ -1,13 +1,13 @@
-const transporter = require('../config/mailer');
+const transporter = require("../config/mailer");
 
-exports.sendEmail = async (to, subject, text, html) => {
+exports.sendEmail = async (to, subject, html, text = "") => {
   try {
     await transporter.sendMail({
       from: process.env.EMAIL_USER,
       to,
       subject,
-      text,
-      html 
+      text: text || "Please view this email in HTML format",
+      html,
     });
   } catch (err) {
     console.error("Email Error:", err.message);

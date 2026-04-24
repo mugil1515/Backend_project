@@ -82,3 +82,24 @@ exports.verifyOtpValidator = [
     .isLength({ min: 6, max: 6 }).withMessage('OTP must be exactly 6 digits')
     .isNumeric().withMessage('OTP must contain only numbers')
 ];
+
+exports.resetPasswordValidator = [
+  body("newPassword")
+    .trim()
+    .notEmpty().withMessage("Password is required")
+    .isLength({ min: 8 }).withMessage("Password must be at least 8 characters long")
+    .matches(/[A-Z]/).withMessage("Must contain at least one uppercase letter")
+    .matches(/[a-z]/).withMessage("Must contain at least one lowercase letter")
+    .matches(/[0-9]/).withMessage("Must contain at least one number")
+    .matches(/[@$!%*?&]/).withMessage("Must contain at least one special character"),
+
+  body("confirmPassword")
+    .trim()
+    .notEmpty().withMessage("Confirm password is required")
+    .custom((value, { req }) => {
+      if (value !== req.body.newPassword) {
+        throw new Error("Passwords do not match");
+      }
+      return true;
+    }),
+];
