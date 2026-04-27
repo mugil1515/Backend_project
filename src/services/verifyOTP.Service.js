@@ -1,37 +1,44 @@
 const repo = require('../repository/userRepository');
-const jwt = require('jsonwebtoken');
+const { generateAccessToken, generateRefreshToken } = require('../utils/tokenUtil');
 
 exports.verifyEmailOTP = async (email, enteredOTP) => {
   const user = await repo.findUserByEmailOrPhone(email);
 
   if (!user) {
-    return { status: 404, message: "User not found" };
+    return { status: 404, success: false, message: "user_not_found" };
   }
 
   if (!user.otp) {
-    return { status: 400, message: "OTP not requested" };
+    return { status: 400, success: false, message: "otp_not_requested" };
   }
 
   if (new Date() > new Date(user.otp_expiry)) {
-    return { status: 400, message: "OTP expired" };
+    return { status: 400, success: false, message: "otp_expired" };
   }
 
   if (user.otp !== enteredOTP) {
-    return { status: 400, message: "Invalid OTP" };
+    return { status: 400, success: false, message: "invalid_otp" };
   }
 
   await repo.saveOTP(user.email, null, null);
 
-  const token = jwt.sign(
-    { id: user.id, email: user.email },
-    process.env.JWT_SECRET,
-    { expiresIn: process.env.JWT_EXPIRES_IN }
-  );
+  const accessToken = generateAccessToken(user);
+  const refreshToken = generateRefreshToken(user);
+
 
   return {
     success: true,
     status: 200,
-    message: "OTP verified successfully",
-    token
+    message: "otp_verified_successfully",
+    accessToken,
+    refreshToken,
+    user: {
+      id: user.id,
+      email: user.email,
+      contactno: user.contactno,
+      firstname: user.firstname,
+      lastname: user.lastname,
+      address:user.address
+    }
   };
 };

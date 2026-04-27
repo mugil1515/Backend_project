@@ -1,20 +1,19 @@
-
 exports.logout = (req, res, next) => {
+
   try {
-    res.clearCookie("token", {
+    res.clearCookie("refreshToken", {
       httpOnly: true,
-      secure: true,      
-      sameSite: "Strict"
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      path: "/"
     });
 
-    res.statusCode = 200;
-    res.locals.data = {
+    res.status(200).json({
       success: true,
-      message: "Logged out successfully"
-    };
+      message: "logged_out_successfully"
+    });
 
-    next(); 
   } catch (error) {
-    next(error); 
+    next(error);
   }
 };

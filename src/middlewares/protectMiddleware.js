@@ -3,23 +3,27 @@ const repo = require("../repository/userRepository");
 
 exports.protect = async (req, res, next) => {
   try {
-    const token = req.cookies?.token;
+    let token;
+    if (
+      req.headers.authorization &&
+      req.headers.authorization.startsWith("Bearer")
+    ) {
+      token = req.headers.authorization.split(" ")[1];
+    }
 
-    // 🔥 BLOCK IF NO TOKEN
     if (!token) {
       return res.status(401).json({
         success: false,
-        message: "Not authorized, no token"
+        message: "no_token"
       });
     }
 
-    // 🔥 VERIFY TOKEN
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
     if (!decoded || !decoded.id) {
       return res.status(401).json({
         success: false,
-        message: "Invalid token payload"
+        message: "invalid_token"
       });
     }
 
@@ -28,7 +32,7 @@ exports.protect = async (req, res, next) => {
     if (!user) {
       return res.status(401).json({
         success: false,
-        message: "User not found"
+        message: "user_not_found"
       });
     }
 
@@ -39,7 +43,7 @@ exports.protect = async (req, res, next) => {
   } catch (err) {
     return res.status(401).json({
       success: false,
-      message: "Unauthorized access"
+      message: "token_expired_or_invalid"
     });
   }
 };

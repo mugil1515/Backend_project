@@ -8,7 +8,7 @@ exports.forgotPassword = async (email) => {
   const user = await repo.findUserByEmail(email);
 
   if (!user) {
-    return { status: 404, message: "User not found" };
+    return { status: 404, message: "user_not_found" };
   }
 
   const otp = generateOTP();
@@ -23,45 +23,45 @@ exports.forgotPassword = async (email) => {
     otpEmailTemplate(otp)
   );
 
-  return { status: 200, message: "OTP sent successfully" };
+  return { status: 200, message: "otp_sent_successfully" };
 };
 
 exports.verifyForgotPasswordOTP = async (email, otp) => {
   const user = await repo.findUserByEmail(email);
 
   if (!user) {
-    return { status: 404, message: "User not found" };
+    return { status: 404, message: "user_not_found" };
   }
 
   if (!user.otp) {
-    return { status: 400, message: "OTP not requested" };
+    return { status: 400, message: "otp_not_requested" };
   }
 
   if (new Date() > new Date(user.otp_expiry)) {
-    return { status: 400, message: "OTP expired" };
+    return { status: 400, message: "otp_expired" };
   }
 
   if (user.otp !== otp) {
-    return { status: 400, message: "Invalid OTP" };
+    return { status: 400, message: "invalid_otp" };
   }
 
   await repo.clearOTP(email);
 
   return {
     status: 200,
-    message: "OTP verified. You can now reset password"
+    message: "otp_verified"
   };
 };
 
 exports.resetPassword = async ({ email, newPassword, confirmPassword }) => {
   if (newPassword !== confirmPassword) {
-    return { status: 400, message: "Passwords do not match" };
+    return { status: 400, message: "passwords_do_not_match" };
   }
 
   const user = await repo.findUserByEmail(email);
 
   if (!user) {
-    return { status: 404, message: "User not found" };
+    return { status: 404, message: "user_not_found" };
   }
 
   const isSame = await bcrypt.compare(newPassword, user.password);
@@ -69,7 +69,7 @@ exports.resetPassword = async ({ email, newPassword, confirmPassword }) => {
   if (isSame) {
     return {
       status: 400,
-      message: "New password cannot be same as old password"
+      message: "new_password_cannot_be_same_as_old_password"
     };
   }
 
@@ -79,6 +79,6 @@ exports.resetPassword = async ({ email, newPassword, confirmPassword }) => {
 
   return {
     status: 200,
-    message: "Password reset successful"
+    message: "password_reset_successful"
   };
 };

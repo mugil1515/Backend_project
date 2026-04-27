@@ -1,4 +1,4 @@
-const { comparePassword, generateAccessToken } = require('../utils/tokenUtil');
+const { comparePassword, generateAccessToken, generateRefreshToken } = require('../utils/tokenUtil');
 const repo = require('../repository/userRepository');
 
 exports.loginUser = async (data) => {
@@ -10,7 +10,7 @@ exports.loginUser = async (data) => {
     return {
       success: false,
       status: 404,
-      message: "User not found. Please register first."
+      message: "user_not_found"
     };
   }
 
@@ -20,16 +20,27 @@ exports.loginUser = async (data) => {
     return {
       success: false,
       status: 401,
-      message: "Invalid Password"
+      message: "invalid_password"
     };
   }
 
-  const accessToken = generateAccessToken({ id: user.id });
+  const accessToken = generateAccessToken(user);
+  const refreshToken = generateRefreshToken(user);
+
 
   return {
     success: true,
     status: 200,
-    message: "Login successful",
+    message: "login_successful",
     accessToken,
+    refreshToken,
+    user: {
+    id: user.id,
+    email: user.email,
+    contactno: user.contactno,
+    firstname: user.firstname,
+    lastname: user.lastname,
+    address:user.address
+  }
   };
 };

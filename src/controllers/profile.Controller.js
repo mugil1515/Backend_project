@@ -2,33 +2,35 @@ const repo = require("../repository/userRepository");
 
 exports.getProfile = async (req, res, next) => {
   try {
-    const userId = req.user.id;
-
-    if (!userId) {
+    if (!req.user || !req.user.id) {
       return res.status(401).json({
         success: false,
-        message: "Unauthorized: no user id"
+        message: "unauthorized_access"
       });
     }
-    const user = await repo.findUserById(userId);
+
+    const user = await repo.findUserById(req.user.id);
 
     if (!user) {
-      return res.status(401).json({
+      return res.status(404).json({
         success: false,
-        message: "User not found"
+        message: "user_not_found"
       });
     }
 
-    return res.json({
+    // 🔐 remove sensitive data
+    const { password, otp, refreshToken, ...safeUser } = user;
+
+    return res.status(200).json({
       success: true,
-      message: "Profile fetched successfully",
-      user
+      message: "profile_fetched",
+      user: safeUser
     });
 
   } catch (error) {
     return res.status(500).json({
       success: false,
-      message: "Server error",
+      message: "internal_server_error",
       error: error.message
     });
   }

@@ -1,6 +1,7 @@
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 
+// 🔐 Password
 exports.hashPassword = async (password) => {
   return await bcrypt.hash(password, 10);
 };
@@ -9,6 +10,7 @@ exports.comparePassword = async (password, hash) => {
   return await bcrypt.compare(password, hash);
 };
 
+// 🔑 Access Token (SHORT LIFE)
 exports.generateAccessToken = (user) => {
   return jwt.sign(
     {
@@ -17,10 +19,22 @@ exports.generateAccessToken = (user) => {
       contactno: user.contactno
     },
     process.env.JWT_SECRET,
-    { expiresIn: process.env.JWT_EXPIRES_IN  }
+    { expiresIn: process.env.JWT_SECRET_EXPIRES_IN } // short expiry
   );
-};;
+};
 
+// 🔄 Refresh Token (LONG LIFE)
+exports.generateRefreshToken = (user) => {
+  return jwt.sign(
+    {
+      id: user.id
+    },
+    process.env.JWT_REFRESH_SECRET,
+    { expiresIn: process.env.JWT_REFRESH_SECRET_EXPIRES_IN } // long expiry
+  );
+};
+
+// 🔢 OTP
 exports.generateOTP = () => {
   return Math.floor(100000 + Math.random() * 900000).toString();
 };
