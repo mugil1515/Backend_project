@@ -2,7 +2,6 @@ const repo = require("../repository/userRepository");
 
 exports.getProfile = async (req, res, next) => {
   try {
-    // 🔥 from middleware (JWT decoded)
     const userId = req.user.id;
 
     if (!userId) {
@@ -11,8 +10,6 @@ exports.getProfile = async (req, res, next) => {
         message: "Unauthorized: no user id"
       });
     }
-
-    // 🔥 fetch user from DB via repository
     const user = await repo.findUserById(userId);
 
     if (!user) {

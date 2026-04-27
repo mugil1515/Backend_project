@@ -45,7 +45,6 @@ exports.verifyForgotPasswordOTP = async (email, otp) => {
     return { status: 400, message: "Invalid OTP" };
   }
 
-  // 🔥 clear OTP after success
   await repo.clearOTP(email);
 
   return {
@@ -65,7 +64,6 @@ exports.resetPassword = async ({ email, newPassword, confirmPassword }) => {
     return { status: 404, message: "User not found" };
   }
 
-  // 🔐 prevent same password reuse
   const isSame = await bcrypt.compare(newPassword, user.password);
 
   if (isSame) {
@@ -75,10 +73,8 @@ exports.resetPassword = async ({ email, newPassword, confirmPassword }) => {
     };
   }
 
-  // 🔐 hash new password
   const hashedPassword = await bcrypt.hash(newPassword, 10);
 
-  // 🔥 update DB
   await repo.updatePassword(email, hashedPassword);
 
   return {

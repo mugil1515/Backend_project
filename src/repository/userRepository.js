@@ -1,7 +1,5 @@
 const db = require("../config/db");
 
-
-// 🔹 Find user by email (used everywhere in service)
 exports.findUserByEmail = async (email) => {
   const [rows] = await db.query(
     `SELECT id, firstname, lastname, email, contactno, address, password, otp, otp_expiry
@@ -13,7 +11,6 @@ exports.findUserByEmail = async (email) => {
   return rows[0];
 };
 
-// 🔹 Find user by email or phone (login use)
 exports.findUserByEmailOrPhone = async (identifier) => {
   const [rows] = await db.query(
     `SELECT id, firstname, lastname, email, contactno, address, password, otp, otp_expiry 
@@ -25,8 +22,6 @@ exports.findUserByEmailOrPhone = async (identifier) => {
   return rows[0];
 };
 
-
-// 🔹 Create user
 exports.createUser = async (data) => {
   const [result] = await db.query(
     `INSERT INTO users SET ?`,
@@ -36,8 +31,6 @@ exports.createUser = async (data) => {
   return result.insertId;
 };
 
-
-// 🔹 Save OTP (USED FOR BOTH forgot password + email verification)
 exports.saveOTP = async (email, otp, expiry) => {
   await db.query(
     `UPDATE users 
@@ -47,8 +40,6 @@ exports.saveOTP = async (email, otp, expiry) => {
   );
 };
 
-
-// 🔹 Clear OTP after success
 exports.clearOTP = async (email) => {
   await db.query(
     `UPDATE users 
@@ -58,8 +49,6 @@ exports.clearOTP = async (email) => {
   );
 };
 
-
-// 🔹 Update password (FIXED - uses email now)
 exports.updatePassword = async (email, hashedPassword) => {
   await db.query(
     `UPDATE users 
@@ -69,7 +58,6 @@ exports.updatePassword = async (email, hashedPassword) => {
   );
 };
 
-// 🔹 Find user by ID (profile)
 exports.findUserById = async (id) => {
   const [rows] = await db.query(
     `SELECT id, firstname, lastname, email, contactno, address 

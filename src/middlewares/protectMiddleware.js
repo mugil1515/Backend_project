@@ -23,7 +23,6 @@ exports.protect = async (req, res, next) => {
       });
     }
 
-    // 🔥 FETCH USER FROM DB
     const user = await repo.findUserById(decoded.id);
 
     if (!user) {
@@ -33,7 +32,6 @@ exports.protect = async (req, res, next) => {
       });
     }
 
-    // 🔥 ATTACH USER
     req.user = user;
 
     next();

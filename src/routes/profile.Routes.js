@@ -5,7 +5,6 @@ const { protect } = require("../middlewares/protectMiddleware");
 const profileController = require("../controllers/profile.Controller");
 const { sendResponse } = require("../middlewares/responseMiddleware");
 
-// Protected profile route
 router.get(
   "/profile",
   protect,

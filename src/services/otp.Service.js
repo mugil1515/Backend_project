@@ -5,7 +5,6 @@ const { otpEmailTemplate } = require('../utils/emailotpTemplate');
 
 exports.sendOTP = async (email) => {
   try {
-    // 🔹 1. Check user exists
     const user = await repo.findUserByEmail(email);
 
     if (!user) {
@@ -16,21 +15,19 @@ exports.sendOTP = async (email) => {
       };
     }
 
-    // 🔹 2. Generate OTP + expiry
     const otp = generateOTP();
-    const expiry = getOTPExpiryTime(5); // 5 minutes
+    const expiry = getOTPExpiryTime(5); 
 
-    // 🔹 3. Save OTP in DB
     await repo.saveOTP(user.email, otp, expiry);
 
-    // 🔹 4. Send Email using template
+  
    await sendEmail(
   email,
   "Your OTP Code",
-  `Your OTP is ${otp}`,   // plain text fallback
-  otpEmailTemplate(otp)   // ✅ HTML template
+  `Your OTP is ${otp}`,   
+  otpEmailTemplate(otp)   
 );
-    // 🔹 5. Response
+  
     return {
       success: true,
       status: 200,

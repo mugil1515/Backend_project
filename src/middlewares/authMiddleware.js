@@ -13,9 +13,9 @@ exports.protect = (req, res, next) => {
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-    console.log("🔐 DECODED TOKEN:", decoded); // DEBUG
+    console.log("🔐 DECODED TOKEN:", decoded);
 
-    req.user = decoded; // { id: ... }
+    req.user = decoded;
 
     next();
 
