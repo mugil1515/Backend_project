@@ -10,7 +10,7 @@ exports.registerUser = async (data) => {
     return {
       success: false,
       status: 409,
-      message: "user_already_exists"
+      message: "User already exists"
     };
   }
 

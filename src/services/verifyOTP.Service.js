@@ -5,7 +5,7 @@ exports.verifyEmailOTP = async (email, enteredOTP) => {
   const user = await repo.findUserByEmailOrPhone(email);
 
   if (!user) {
-    return { status: 404, success: false, message: "user_not_found" };
+    return { status: 404, success: false, message: "User not found" };
   }
 
   if (!user.otp) {
@@ -13,11 +13,11 @@ exports.verifyEmailOTP = async (email, enteredOTP) => {
   }
 
   if (new Date() > new Date(user.otp_expiry)) {
-    return { status: 400, success: false, message: "otp_expired" };
+    return { status: 400, success: false, message: "OTP expired" };
   }
 
   if (user.otp !== enteredOTP) {
-    return { status: 400, success: false, message: "invalid_otp" };
+    return { status: 400, success: false, message: "Invalid OTP" };
   }
 
   await repo.saveOTP(user.email, null, null);

@@ -8,13 +8,13 @@ exports.verifyOTPController = async (req, res, next) => {
     if (!identifier) {
       return res.status(400).json({
         success: false,
-        message: "email_is_required"
+        message: "Email required"
       });
     }
     if(!otp){
       return res.status(400).json({
         success: false,
-        message: "otp_is_required"
+        message: "OTP required"
       });
     }
 
@@ -27,7 +27,6 @@ exports.verifyOTPController = async (req, res, next) => {
       });
     }
 
-    // 🔐 Store refresh token in cookie
     res.cookie("refreshToken", result.refreshToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
@@ -36,7 +35,6 @@ exports.verifyOTPController = async (req, res, next) => {
       path: "/"
     });
 
-    // 🔑 Send access token + user to frontend
     return res.status(200).json({
       success: true,
       message: result.message,

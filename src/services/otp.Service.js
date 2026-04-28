@@ -10,7 +10,7 @@ exports.sendOTP = async (email) => {
       return {
         success: false,
         status: 404,
-        message: "user_not_found"
+        message: "User not found"
       };
     }
     const otp = generateOTP();

@@ -10,7 +10,7 @@ exports.loginUser = async (data) => {
     return {
       success: false,
       status: 404,
-      message: "user_not_found"
+      message: "User not found"
     };
   }
 
@@ -20,7 +20,7 @@ exports.loginUser = async (data) => {
     return {
       success: false,
       status: 401,
-      message: "invalid_password"
+      message: "Invalid Password"
     };
   }
 
@@ -29,18 +29,17 @@ exports.loginUser = async (data) => {
 
 
   return {
-    success: true,
-    status: 200,
-    message: "login_successful",
-    accessToken,
-    refreshToken,
-    user: {
+  success: true,
+  status: 200,
+  message: "Login successful",
+  accessToken,
+  user: {
     id: user.id,
     email: user.email,
     contactno: user.contactno,
     firstname: user.firstname,
     lastname: user.lastname,
-    address:user.address
+    address: user.address
   }
-  };
+};
 };
