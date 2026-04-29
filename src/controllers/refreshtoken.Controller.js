@@ -2,10 +2,10 @@ const authService=require('../services/refreshtoken.Service');
 
 exports.refreshToken = async (req, res, next) => {
   try {
-    const refreshToken = req.cookies.refreshToken;
+    const refreshToken = req.cookies?.refreshToken;
 
     if (!refreshToken) {
-      const err = new Error("Refresh token not found");
+      const err = new Error("Session expired. Please login again.");
       err.statusCode = 401;
       return next(err);
     }
@@ -18,7 +18,6 @@ exports.refreshToken = async (req, res, next) => {
     });
 
   } catch (err) {
-    err.statusCode = err.statusCode || 401;
     return next(err);
   }
 };

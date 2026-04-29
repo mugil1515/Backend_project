@@ -21,8 +21,8 @@ exports.login = async (req, res, next) => {
     res.cookie("refreshToken", response.refreshToken, {
       httpOnly: true,
       sameSite: "lax",
-      secure: process.env.NODE_ENV === "production",
-      maxAge: 7 * 24 * 60 * 60 * 1000,
+      secure: false,
+      maxAge: 1 * 24 * 60 * 60 * 1000,
       path: "/"
     });
 

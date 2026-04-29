@@ -55,13 +55,13 @@ exports.verifyForgotPasswordOTP = async (email, otp) => {
 
 exports.resetPassword = async ({ email, newPassword, confirmPassword }) => {
   if (newPassword !== confirmPassword) {
-    return { status: 400, message: "passwords_do_not_match" };
+    return { status: 400, message: "Passwords do not match" };
   }
 
   const user = await repo.findUserByEmail(email);
 
   if (!user) {
-    return { status: 404, message: "user_not_found" };
+    return { status: 404, message: "User not found" };
   }
 
   const isSame = await bcrypt.compare(newPassword, user.password);
@@ -69,7 +69,7 @@ exports.resetPassword = async ({ email, newPassword, confirmPassword }) => {
   if (isSame) {
     return {
       status: 400,
-      message: "new_password_cannot_be_same_as_old_password"
+      message: "New password cannot be same as the old password"
     };
   }
 
@@ -79,6 +79,6 @@ exports.resetPassword = async ({ email, newPassword, confirmPassword }) => {
 
   return {
     status: 200,
-    message: "password_reset_successful"
+    message: "Password reset successful"
   };
 };

@@ -14,7 +14,7 @@ exports.sendOTP = async (email) => {
       };
     }
     const otp = generateOTP();
-    const expiry = getOTPExpiryTime(5);
+    const expiry = getOTPExpiryTime();
 
     await repo.saveOTP(user.email, otp, expiry);
 
