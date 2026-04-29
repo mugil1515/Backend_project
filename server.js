@@ -23,14 +23,18 @@ const verifyOTPRoutes = require('./src/routes/verifyOTP.Routes');
 const profileRoutes = require('./src/routes/profile.Routes');
 const logoutRoutes = require('./src/routes/logout.Routes');
 const forgetpassRoutes = require('./src/routes/forgetpass.Routes');
+const refreshRoutes=require('./src/routes/refreshtoken.Routes');
 
-app.use('/api/v1', registerRoutes);
-app.use('/api/v1', loginRoutes);
-app.use('/api/v1', otpRoutes);
-app.use('/api/v1', verifyOTPRoutes);
-app.use('/api/v1', profileRoutes);
-app.use('/api/v1', logoutRoutes);
-app.use('/api/v1', forgetpassRoutes);
+app.use('/api/v1', [
+  registerRoutes,
+  loginRoutes,
+  otpRoutes,
+  verifyOTPRoutes,
+  profileRoutes,
+  logoutRoutes,
+  forgetpassRoutes,
+  refreshRoutes
+]);
 
 app.use((req, res) => {
   res.status(404).json({

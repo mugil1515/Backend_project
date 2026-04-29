@@ -4,8 +4,18 @@ exports.login = async (req, res, next) => {
   try {
     const response = await service.loginUser(req.body);
 
-    if (!response.success) {
-      return res.status(response.status).json(response);
+    if (!response || !response.success) {
+      return res.status(response?.status || 400).json({
+        success: false,
+        message: response?.message || "Login failed"
+      });
+    }
+
+    if (!response.refreshToken || !response.accessToken) {
+      return res.status(500).json({
+        success: false,
+        message: "Token generation failed"
+      });
     }
 
     res.cookie("refreshToken", response.refreshToken, {
@@ -15,8 +25,8 @@ exports.login = async (req, res, next) => {
       maxAge: 7 * 24 * 60 * 60 * 1000,
       path: "/"
     });
-    
-    res.json({
+
+    return res.status(200).json({
       success: true,
       message: response.message,
       accessToken: response.accessToken,
@@ -25,7 +35,8 @@ exports.login = async (req, res, next) => {
 
   } catch (err) {
     console.log("LOGIN ERROR:", err);
-    res.status(500).json({
+
+    return res.status(500).json({
       success: false,
       message: "Internal server error"
     });
