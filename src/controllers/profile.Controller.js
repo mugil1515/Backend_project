@@ -18,8 +18,17 @@ exports.getProfile = async (req, res, next) => {
       });
     }
 
-    // 🔐 remove sensitive data
     const { password, otp, refreshToken, ...safeUser } = user;
+    if (req.user.role === "admin") {
+      return res.status(200).json({
+        success: true,
+        message: "admin_profile_access",
+        user: {
+          ...safeUser,
+          accessLevel: "admin"
+        }
+      });
+    }
 
     return res.status(200).json({
       success: true,

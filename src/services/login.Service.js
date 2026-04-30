@@ -34,13 +34,15 @@ exports.loginUser = async (data) => {
     message: "Login successful",
     accessToken,
     refreshToken, 
+    role: user.role,
     user: {
       id: user.id,
       email: user.email,
       contactno: user.contactno,
       firstname: user.firstname,
       lastname: user.lastname,
-      address: user.address
+      address: user.address,
+      role: user.role,
     }
   };
 };
