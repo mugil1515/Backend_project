@@ -43,7 +43,7 @@ exports.verifyEmailOTP = async (email, enteredOTP) => {
       firstname: user.firstname,
       lastname: user.lastname,
       address: user.address,
-      role: user.role   
+      role: user.role
     }
   };
 };
