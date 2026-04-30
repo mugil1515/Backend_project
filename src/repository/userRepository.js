@@ -2,7 +2,7 @@ const db = require("../config/db");
 
 exports.findUserByEmail = async (email) => {
   const [rows] = await db.query(
-    `SELECT id, firstname, lastname, email, contactno, address, password, otp, otp_expiry
+    `SELECT id, firstname, lastname, email, contactno, address, password, otp, otp_expiry, role
      FROM users 
      WHERE email = ?`,
     [email]
@@ -13,8 +13,8 @@ exports.findUserByEmail = async (email) => {
 
 exports.findUserByEmailOrPhone = async (identifier) => {
   const [rows] = await db.query(
-    `SELECT id, firstname, lastname, email, contactno, address, password, otp, otp_expiry 
-    From users
+    `SELECT id, firstname, lastname, email, contactno, address, password, otp, otp_expiry, role
+     FROM users
      WHERE email = ? OR contactno = ?`,
     [identifier, identifier]
   );
@@ -60,7 +60,7 @@ exports.updatePassword = async (email, hashedPassword) => {
 
 exports.findUserById = async (id) => {
   const [rows] = await db.query(
-    `SELECT id, firstname, lastname, email, contactno, address 
+    `SELECT id, firstname, lastname, email, contactno, address, role
      FROM users 
      WHERE id = ?`,
     [id]

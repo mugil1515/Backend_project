@@ -1,5 +1,6 @@
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
+const crypto = require('crypto');
 
 exports.hashPassword = async (password) => {
   return await bcrypt.hash(password, 10);
@@ -13,34 +14,40 @@ exports.generateAccessToken = (user) => {
   return jwt.sign(
     {
       id: user.id,
-      email: user.email,
-      contactno: user.contactno
+      role: user.role 
     },
-    process.env.JWT_SECRET,
-    { expiresIn: process.env.JWT_SECRET_EXPIRES_IN } 
+    process.env.JWT_ACCESS,
+    { expiresIn: process.env.JWT_ACCESS_EXPIRES_IN }
   );
 };
 
 exports.generateRefreshToken = (user) => {
   return jwt.sign(
     {
-      id: user.id
+      id: user.id,
+      role: user.role
     },
-    process.env.JWT_REFRESH_SECRET,
-    { expiresIn: process.env.JWT_REFRESH_SECRET_EXPIRES_IN } 
+    process.env.JWT_REFRESH,
+    { expiresIn: process.env.JWT_REFRESH_EXPIRES_IN }  
   );
 };
 
+
 exports.verifyRefreshToken = (token) => {
-  return jwt.verify(token, process.env.JWT_REFRESH_SECRET);
+  try {
+    return jwt.verify(token, process.env.JWT_REFRESH);
+  } catch (err) {
+    return null; // 
+  }
 };
 
 exports.generateOTP = () => {
-  return Math.floor(100000 + Math.random() * 900000).toString();
+  return crypto.randomInt(100000, 999999).toString();
 };
 
 exports.isOTPExpired = (expiryTime) => {
-  return new Date() > new Date(expiryTime);
+  if (!expiryTime) return true;
+  return Date.now() > new Date(expiryTime).getTime();
 };
 
 exports.getOTPExpiryTime = (minutes = 5) => {

@@ -1,12 +1,13 @@
 const jwt = require("jsonwebtoken");
+const repo = require("../repository/userRepository");
 
-exports.authMiddleware = (req, res, next) => {
+exports.authMiddleware = async (req, res, next) => {
   try {
     let token;
 
     if (
       req.headers.authorization &&
-      req.headers.authorization.startsWith("Bearer")
+      req.headers.authorization.startsWith("Bearer ")
     ) {
       token = req.headers.authorization.split(" ")[1];
     }
@@ -14,20 +15,46 @@ exports.authMiddleware = (req, res, next) => {
     if (!token) {
       return res.status(401).json({
         success: false,
-        message: "no_token"
+        message: "no_token",
       });
     }
 
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    let decoded;
+    try {
+      decoded = jwt.verify(token, process.env.JWT_ACCESS);
+    } catch (err) {
+      if (err.name === "TokenExpiredError") {
+        return res.status(401).json({
+          success: false,
+          message: "token_expired",
+        });
+      }
 
-    req.user = decoded;
+      return res.status(401).json({
+        success: false,
+        message: "invalid_token",
+      });
+    }
+
+    const user = await repo.findUserById(decoded.id);
+
+    if (!user) {
+      return res.status(401).json({
+        success: false,
+        message: "user_not_found",
+      });
+    }
+
+    req.user = user;
 
     next();
 
-  } catch (error) {
-    return res.status(401).json({
+  } catch (err) {
+    console.error("AUTH ERROR:", err);
+
+    return res.status(500).json({
       success: false,
-      message: "token_invalid_or_expired"
+      message: "server_error",
     });
   }
 };

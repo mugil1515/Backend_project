@@ -4,7 +4,7 @@ exports.login = async (req, res, next) => {
   try {
     const response = await service.loginUser(req.body);
 
-    if (!response?.success) {
+    if (!response || !response.success) {
       return res.status(response?.status || 400).json({
         success: false,
         message: response?.message || "Login failed"
@@ -18,16 +18,13 @@ exports.login = async (req, res, next) => {
       });
     }
 
-    // Set refresh token cookie
     res.cookie("refreshToken", response.refreshToken, {
       httpOnly: true,
-      secure: false, // true only for HTTPS production
       sameSite: "lax",
-      maxAge: 5 * 60 * 1000,
+      secure: false,
+      maxAge: 7 * 24 * 60 * 60 * 1000,
       path: "/"
     });
-
-    console.log("Cookie set successfully");
 
     return res.status(200).json({
       success: true,
@@ -37,7 +34,8 @@ exports.login = async (req, res, next) => {
     });
 
   } catch (err) {
-    console.error("LOGIN ERROR:", err);
+    console.log("LOGIN ERROR:", err);
+
     return res.status(500).json({
       success: false,
       message: "Internal server error"

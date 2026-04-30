@@ -1,15 +1,21 @@
 const express = require("express");
 const router = express.Router();
 
-const { protect } = require("../middlewares/protectMiddleware");
 const profileController = require("../controllers/profile.Controller");
-const { sendResponse } = require("../middlewares/responseMiddleware");
+const { authMiddleware } = require("../middlewares/authMiddleware");
+const { authorizeRoles } = require("../middlewares/roleMiddleware");
 
 router.get(
   "/profile",
-  protect,
-  profileController.getProfile,
-  sendResponse
+  authMiddleware,
+  profileController.getProfile
+);
+
+router.get(
+  "/admin/profile",
+  authMiddleware,
+  authorizeRoles("admin"),
+  profileController.getProfile
 );
 
 module.exports = router;
