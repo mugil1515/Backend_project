@@ -22,9 +22,13 @@ exports.verifyEmailOTP = async (email, enteredOTP) => {
 
   await repo.saveOTP(user.email, null, null);
 
-  const accessToken = generateAccessToken(user);
-  const refreshToken = generateRefreshToken(user);
+  const payload = {
+    id: user.id,
+    role: user.role
+  };
 
+  const accessToken = generateAccessToken(payload);
+  const refreshToken = generateRefreshToken(payload);
 
   return {
     success: true,
@@ -38,7 +42,8 @@ exports.verifyEmailOTP = async (email, enteredOTP) => {
       contactno: user.contactno,
       firstname: user.firstname,
       lastname: user.lastname,
-      address:user.address
+      address: user.address,
+      role: user.role   
     }
   };
 };
