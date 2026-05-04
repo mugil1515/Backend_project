@@ -229,7 +229,15 @@ exports.getTodayAttendance =
    const attendance =
   await repo.getTodayAttendance(userId);
 
-return {
+  if (!attendance) {
+    return {
+      isPunchedIn: false
+    };
+  }
+
+  return {
+    isPunchedIn: true,
+
   ...attendance,
 
   late_minutes: getLateMinutes(attendance.punch_in),
@@ -245,13 +253,17 @@ return {
 // GET ATTENDANCE HISTORY
 // ========================================
 exports.getAttendanceHistory = async (userId) => {
-  const history = await repo.getAttendanceHistory(userId);
+
+  const history =
+    await repo.getAttendanceHistory(userId);
 
   const map = new Map();
 
   history.forEach((r) => {
-    const key = new Date(r.punch_in || r.created_at)
-      .toDateString();
+
+    const key = new Date(
+      r.punch_in || r.created_at
+    ).toDateString();
 
     map.set(key, r);
   });
@@ -259,10 +271,13 @@ exports.getAttendanceHistory = async (userId) => {
   const result = [];
 
   for (let i = 0; i < 30; i++) {
+
     const d = new Date();
+
     d.setDate(d.getDate() - i);
 
     const key = d.toDateString();
+
     const r = map.get(key);
 
     const lateMinutes = r?.punch_in
@@ -273,55 +288,76 @@ exports.getAttendanceHistory = async (userId) => {
       ? getEarlyMinutes(r.punch_out)
       : 0;
 
+    const isSunday =
+      d.getDay() === 0;
+
     if (r) {
+
       result.push({
+
         Id: r.id,
 
-        Date: d.toLocaleDateString("en-GB", {
-          day: "2-digit",
-          month: "short",
-          year: "numeric"
-        }),
+        Date: d.toLocaleDateString(
+          "en-GB",
+          {
+            day: "2-digit",
+            month: "short",
+            year: "numeric"
+          }
+        ),
 
         Status: r.attendance_status,
 
         In: r.punch_in
-          ? new Date(r.punch_in).toLocaleTimeString([], {
-              hour: "2-digit",
-              minute: "2-digit",
-              hour12: true
-            })
+          ? new Date(r.punch_in)
+              .toLocaleTimeString([], {
+                hour: "2-digit",
+                minute: "2-digit",
+                hour12: true
+              })
           : "--",
 
         Out: r.punch_out
-          ? new Date(r.punch_out).toLocaleTimeString([], {
-              hour: "2-digit",
-              minute: "2-digit",
-              hour12: true
-            })
+          ? new Date(r.punch_out)
+              .toLocaleTimeString([], {
+                hour: "2-digit",
+                minute: "2-digit",
+                hour12: true
+              })
           : "--",
 
-        ProductionHours: r.working_hours
-          ? Number(r.working_hours)
-          : 0,
+        ProductionHours:
+          r.working_hours
+            ? Number(r.working_hours)
+            : 0,
 
         Late: lateMinutes,
 
-        EarlyLogout: earlyLogoutMinutes
+        EarlyLogout:
+          earlyLogoutMinutes
       });
+
     } else {
+
       result.push({
+
         Id: null,
 
-        Date: d.toLocaleDateString("en-GB", {
-          day: "2-digit",
-          month: "short",
-          year: "numeric"
-        }),
+        Date: d.toLocaleDateString(
+          "en-GB",
+          {
+            day: "2-digit",
+            month: "short",
+            year: "numeric"
+          }
+        ),
 
-        Status: "ABSENT",
+        Status: isSunday
+          ? "OFF"
+          : "ABSENT",
 
         In: "--",
+
         Out: "--",
 
         ProductionHours: 0,

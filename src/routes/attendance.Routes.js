@@ -33,7 +33,7 @@ router.post(
 
 // Today Attendance
 router.get(
-  "/today",
+  "/attendance/today",
   authMiddleware,
   attendanceController.getTodayAttendance
 );
@@ -41,7 +41,7 @@ router.get(
 
 // Attendance History
 router.get(
-  "/history",
+  "/attendance/history",
   authMiddleware,
   attendanceController.getAttendanceHistory
 );
