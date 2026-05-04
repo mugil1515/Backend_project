@@ -24,6 +24,7 @@ const profileRoutes = require('./src/routes/profile.Routes');
 const logoutRoutes = require('./src/routes/logout.Routes');
 const forgetpassRoutes = require('./src/routes/forgetpass.Routes');
 const refreshRoutes=require('./src/routes/refreshtoken.Routes');
+const attendanceRoutes =require('./src/routes/attendance.Routes');
 
 app.use('/api/v1', [
   registerRoutes,
@@ -33,7 +34,8 @@ app.use('/api/v1', [
   profileRoutes,
   logoutRoutes,
   forgetpassRoutes,
-  refreshRoutes
+  refreshRoutes,
+  attendanceRoutes
 ]);
 
 app.use((req, res) => {
