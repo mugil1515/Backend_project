@@ -2,8 +2,9 @@ const express = require("express");
 const router = express.Router();
 
 const profileController = require("../controllers/profile.Controller");
-const { authMiddleware } = require("../middlewares/authMiddleware");
-const { authorizeRoles } = require("../middlewares/roleMiddleware");
+const authMiddleware  = require("../middlewares/authMiddleware");
+const authorizeRoles = require("../middlewares/roleMiddleware");
+
 
 router.get(
   "/profile",
@@ -14,7 +15,7 @@ router.get(
 router.get(
   "/admin/profile",
   authMiddleware,
-  authorizeRoles("admin"),
+  authorizeRoles("ADMIN"),
   profileController.getProfile
 );
 

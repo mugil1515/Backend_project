@@ -68,3 +68,49 @@ exports.findUserById = async (id) => {
 
   return rows[0];
 };
+exports.updateMyProfile = async ({
+  userId,
+  firstname,
+  lastname,
+  contactno,
+  email
+}) => {
+
+  const [result] = await db.query(`
+    UPDATE users
+    SET
+      firstname = ?,
+      lastname = ?,
+      contactno = ?,
+      email = ?
+    WHERE id = ?
+  `, [
+    firstname,
+    lastname,
+    contactno,
+    email,
+    userId
+  ]);
+
+  return result;
+};
+
+exports.isEmailTaken = async (email, userId) => {
+
+  const [rows] = await db.query(
+    `SELECT id FROM users WHERE email = ? AND id != ?`,
+    [email, userId]
+  );
+  return rows.length > 0;
+};
+
+exports.isContactTaken = async (contactno, userId) => {
+  const [rows] = await db.query(
+    `SELECT id FROM users WHERE contactno = ? AND id != ?`,
+    [contactno, userId]
+  );
+
+  return rows.length > 0;
+};
+
+

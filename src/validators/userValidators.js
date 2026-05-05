@@ -103,3 +103,25 @@ exports.resetPasswordValidator = [
       return true;
     }),
 ];
+
+exports.updateProfileValidator = [
+  body("firstname")
+    .optional()
+    .isLength({ min: 2, max: 50 })
+    .withMessage("Firstname must be 2–50 characters"),
+
+  body("lastname")
+    .optional()
+    .isLength({ min: 1, max: 50 })
+    .withMessage("Lastname must be 1–50 characters"),
+
+  body("email")
+    .optional()
+    .isEmail()
+    .withMessage("Invalid email format"),
+
+  body("contactno")
+    .optional()
+    .matches(/^[0-9]{10}$/)
+    .withMessage("Contact number must be 10 digits"),
+];

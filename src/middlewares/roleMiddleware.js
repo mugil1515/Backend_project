@@ -1,7 +1,9 @@
-exports.authorizeRoles = (...allowedRoles) => {
-    
+const authorizeRoles = (...allowedRoles) => {
+
   return (req, res, next) => {
+
     try {
+
       if (!req.user) {
         return res.status(401).json({
           success: false,
@@ -9,14 +11,15 @@ exports.authorizeRoles = (...allowedRoles) => {
         });
       }
 
-      const role = req.user.role?.trim()?.toLowerCase();
+      const role = req.user.role?.trim()?.toUpperCase();
 
-       if (role !== "admin") {
-         return res.status(403).json({
-         success: false,
-         message: "admin_access_only",
-  });
-}
+      if (!allowedRoles.includes(role)) {
+        return res.status(403).json({
+          success: false,
+          message: "admin_access_only",
+        });
+      }
+
       next();
 
     } catch (error) {
@@ -27,3 +30,5 @@ exports.authorizeRoles = (...allowedRoles) => {
     }
   };
 };
+
+module.exports = authorizeRoles;

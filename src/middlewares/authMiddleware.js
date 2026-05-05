@@ -1,8 +1,10 @@
 const jwt = require("jsonwebtoken");
 const repo = require("../repository/userRepository");
 
-exports.authMiddleware = async (req, res, next) => {
+const authMiddleware = async (req, res, next) => {
+
   try {
+
     let token;
 
     if (
@@ -20,9 +22,11 @@ exports.authMiddleware = async (req, res, next) => {
     }
 
     let decoded;
+
     try {
       decoded = jwt.verify(token, process.env.JWT_ACCESS);
     } catch (err) {
+
       if (err.name === "TokenExpiredError") {
         return res.status(401).json({
           success: false,
@@ -50,6 +54,7 @@ exports.authMiddleware = async (req, res, next) => {
     next();
 
   } catch (err) {
+
     console.error("AUTH ERROR:", err);
 
     return res.status(500).json({
@@ -58,3 +63,5 @@ exports.authMiddleware = async (req, res, next) => {
     });
   }
 };
+
+module.exports = authMiddleware;
