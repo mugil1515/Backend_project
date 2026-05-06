@@ -1,4 +1,5 @@
 const repo = require("../repository/attendanceRepository");
+const adminRepo=require("../repository/adminRepository"); 
 
 const {calculateDistance} = require("../utils/distanceutil");
 
@@ -121,4 +122,8 @@ exports.deleteAttendance = async (attendanceId) => {
     success: true,
     message: "Attendance deleted successfully"
   };
+};
+
+exports.getAllUsers = async () => {
+  return await adminRepo.getAllUsers();
 };

@@ -1,4 +1,3 @@
-// utils/attendanceCalc.util.js
 
 exports.getLateMinutes = (punchIn) => {
   const inTime = new Date(punchIn);
