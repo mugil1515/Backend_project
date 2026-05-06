@@ -1,124 +1,124 @@
-const adminRepo = require("../repository/adminRepository");
+const repo = require("../repository/attendanceRepository");
+
+const {calculateDistance} = require("../utils/distanceutil");
+
+const {
+  OFFICE_LAT,
+  OFFICE_LNG,
+  ALLOWED_RADIUS,
+  OFFICE_START_HOUR,
+  OFFICE_START_MINUTE
+} = require("../config/attendance.config");
 
 
-// ==========================
-// DASHBOARD
-// ==========================
+// ===============================
+// PUNCH IN SERVICE
+// ===============================
 
-exports.getDashboard = async () => {
+exports.punchIn = async ({
+  userId,
+  latitude,
+  longitude
+}) => {
 
-  const totalUsers = await adminRepo.getTotalUsers();
-  const presentToday = await adminRepo.getPresentToday();
-  const absentToday = await adminRepo.getAbsentToday();
-  const lateUsers = await adminRepo.getLateUsers();
-  const halfDayUsers = await adminRepo.getHalfDayUsers();
+  // VALIDATION
+  if (!userId || latitude == null || longitude == null) {
+    const err = new Error(
+      "Missing required fields"
+    );
+    err.status = 400;
+    throw err;
+  }
+
+  // LOCATION CHECK
+  const distance =
+    calculateDistance(
+      latitude,
+      longitude,
+      OFFICE_LAT,
+      OFFICE_LNG
+    );
+
+  if (distance > ALLOWED_RADIUS) {
+    const err = new Error(
+      "You are outside office location"
+    );
+    err.status = 400;
+    throw err;
+  }
+
+  // CHECK EXISTING ATTENDANCE
+  const existingAttendance =
+    await repo.getTodayAttendance(userId);
+
+  if (existingAttendance) {
+    const err = new Error(
+      "Already punched in today"
+    );
+    err.status = 400;
+    throw err;
+  }
+
+  // STATUS CALCULATION
+  const now = new Date();
+
+  const currentMinutes =
+    now.getHours() * 60 +
+    now.getMinutes();
+
+  const officeStartMinutes =
+    OFFICE_START_HOUR * 60 +
+    OFFICE_START_MINUTE;
+
+  const status =
+    currentMinutes > officeStartMinutes
+      ? "LATE"
+      : "PRESENT";
+
+  // INSERT
+  await repo.createAttendance({
+    userId,
+    latitude,
+    longitude,
+    status
+  });
 
   return {
-    totalUsers,
-    presentToday,
-    absentToday,
-    lateUsers,
-    halfDayUsers
+    success: true,
+    message: "Punch in successful"
+  };
+};
+// =======================================
+// DELETE USER
+// =======================================
+
+exports.deleteUser = async (userId) => {
+  const result = await adminRepo.deleteUser(userId);
+
+  if (result.affectedRows === 0) {
+    throw new Error("User not found or already deleted");
+  }
+
+  return {
+    success: true,
+    message: "User deleted successfully"
   };
 };
 
 
-// ==========================
-// TODAY ATTENDANCE
-// ==========================
+// =======================================
+// DELETE ATTENDANCE
+// =======================================
 
-exports.getTodayAttendance = async () => {
+exports.deleteAttendance = async (attendanceId) => {
+  const result = await adminRepo.deleteAttendance(attendanceId);
 
-  return await adminRepo.getTodayAttendanceList();
-};
-
-
-// ==========================
-// ALL ATTENDANCE (PAGINATION)
-// ==========================
-
-exports.getAllAttendance = async (query) => {
-
-  const page = Number(query.page) || 1;
-  const limit = Number(query.limit) || 10;
-
-  const data = await adminRepo.getAllAttendance({
-    page,
-    limit,
-    search: query.search,
-    status: query.status,
-    date: query.date
-  });
-
-  const total = await adminRepo.getAttendanceCount({
-    search: query.search,
-    status: query.status,
-    date: query.date
-  });
+  if (result.affectedRows === 0) {
+    throw new Error("Attendance record not found");
+  }
 
   return {
-    data,
-    total,
-    page,
-    limit
+    success: true,
+    message: "Attendance deleted successfully"
   };
-};
-
-
-// ==========================
-// SINGLE ATTENDANCE
-// ==========================
-
-exports.getAttendanceById = async (id) => {
-  return await adminRepo.getAttendanceById(id);
-};
-
-
-// ==========================
-// UPDATE ATTENDANCE
-// ==========================
-
-exports.updateAttendance = async (id, body) => {
-
-  return await adminRepo.updateAttendance({
-    attendanceId: id,
-    punch_in: body.punch_in,
-    punch_out: body.punch_out,
-    working_hours: body.working_hours,
-    attendance_status: body.attendance_status
-  });
-  return true;
-};
-
-
-// ==========================
-// USERS
-// ==========================
-
-exports.getAllUsers = async () => {
-  return await adminRepo.getAllUsers();
-};
-
-
-// ==========================
-// SINGLE USER
-// ==========================
-
-exports.getUserById = async (id) => {
-  return await adminRepo.getUserById(id);
-};
-
-
-// ==========================
-// UPDATE USER
-// ==========================
-
-exports.updateUser = async (id, body) => {
-
-  return await adminRepo.updateUser({
-    userId: id,
-    firstname: body.firstname,
-    lastname: body.lastname,
-    contactno: body.contactno
-  });
 };

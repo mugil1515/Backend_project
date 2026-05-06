@@ -1,89 +1,122 @@
-// controllers/attendance.controller.js
-
-const attendanceService =
-  require("../services/attendance.service");
-
+const attendanceService = require("../services/attendance.service");
 
 // ========================================
-// PUNCH IN CONTROLLER
+// PUNCH IN
 // ========================================
 
-exports.punchIn = async (req, res, next) => {
-  try {
-    const userId = req.user.id;
-
-    const { latitude, longitude } = req.body;
-
-    const result =
-      await attendanceService.punchIn({
-        userId,
-        latitude,
-        longitude
-      });
-
-    return res.status(200).json(result);
-
-  } catch (error) {
-    next(error); // pass to error middleware
-  }
-};
-
-
-// ========================================
-// PUNCH OUT CONTROLLER
-// ========================================
-
-exports.punchOut = async (req, res, next) => {
-  try {
-    const userId = req.user.id;
-
-    const { latitude, longitude } = req.body;
-
-    const result =
-      await attendanceService.punchOut({
-        userId,
-        latitude,
-        longitude
-      });
-
-    return res.status(200).json(result);
-
-  } catch (error) {
-    next(error);
-  }
-};
-
-
-// ========================================
-// TODAY ATTENDANCE
-// ========================================
-
-exports.getTodayAttendance = async (
+exports.punchIn = async (
   req,
   res,
   next
 ) => {
+
   try {
-    const userId = req.user.id;
 
-    const data =
-      await attendanceService.getTodayAttendance(
-        userId
-      );
+    const result =
+      await attendanceService.punchIn({
 
-    return res.status(200).json({
+        userId: req.user.id,
+
+        latitude:
+          req.body.latitude,
+
+        longitude:
+          req.body.longitude
+      });
+
+    return res.status(201).json({
+
       success: true,
-      data
+
+      message:
+        result.message,
+
+      data: result
     });
 
   } catch (error) {
+
     next(error);
   }
 };
 
 
 // ========================================
-// ATTENDANCE HISTORY
+// PUNCH OUT
+// ========================================
+
+exports.punchOut = async (
+  req,
+  res,
+  next
+) => {
+
+  try {
+
+    const result =
+      await attendanceService.punchOut({
+
+        userId: req.user.id,
+
+        latitude:
+          req.body.latitude,
+
+        longitude:
+          req.body.longitude
+      });
+
+    return res.status(200).json({
+
+      success: true,
+
+      message:
+        result.message,
+
+      data: result
+    });
+
+  } catch (error) {
+
+    next(error);
+  }
+};
+
+
+// ========================================
+// GET TODAY ATTENDANCE
+// ========================================
+
+exports.getTodayAttendance =
+  async (
+    req,
+    res,
+    next
+  ) => {
+
+    try {
+
+      const result =
+        await attendanceService
+          .getTodayAttendance(
+            req.user.id
+          );
+
+      return res.status(200).json({
+
+        success: true,
+
+        data: result
+      });
+
+    } catch (error) {
+
+      next(error);
+    }
+  };
+
+
+// ========================================
+// GET ATTENDANCE HISTORY
 // ========================================
 
 exports.getAttendanceHistory = async (
@@ -91,17 +124,17 @@ exports.getAttendanceHistory = async (
   res,
   next
 ) => {
+
   try {
-    const userId = req.user.id;
 
     const data =
       await attendanceService.getAttendanceHistory(
-        userId
+        req.user.id
       );
 
     return res.status(200).json({
       success: true,
-      data
+      data: data
     });
 
   } catch (error) {

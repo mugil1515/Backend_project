@@ -411,7 +411,7 @@ exports.getUserById = async (userId) => {
       lastname,
       email,
       contactno,
-      role,
+      role
 
     FROM users
 
@@ -450,6 +450,26 @@ exports.updateUser = async ({
     contactno,
     userId
   ]);
+
+  return result;
+};
+
+exports.deleteUser = async (userId) => {
+
+  const [result] = await db.query(`
+    DELETE FROM users
+    WHERE id = ?
+  `, [userId]);
+
+  return result;
+};
+
+exports.deleteAttendance = async (attendanceId) => {
+
+  const [result] = await db.query(`
+    DELETE FROM attendance
+    WHERE id = ?
+  `, [attendanceId]);
 
   return result;
 };

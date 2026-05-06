@@ -1,5 +1,3 @@
-// services/attendance.service.js
-
 const repo = require("../repository/attendanceRepository");
 const {
   getLateMinutes,
@@ -273,7 +271,6 @@ exports.getAttendanceHistory = async (userId) => {
   for (let i = 0; i < 30; i++) {
 
     const d = new Date();
-
     d.setDate(d.getDate() - i);
 
     const key = d.toDateString();
@@ -288,42 +285,41 @@ exports.getAttendanceHistory = async (userId) => {
       ? getEarlyMinutes(r.punch_out)
       : 0;
 
-    const isSunday =
-      d.getDay() === 0;
+    const isSunday = d.getDay() === 0;
 
     if (r) {
+
+      const isIncomplete =
+        r.punch_in && !r.punch_out;
 
       result.push({
 
         Id: r.id,
 
-        Date: d.toLocaleDateString(
-          "en-GB",
-          {
-            day: "2-digit",
-            month: "short",
-            year: "numeric"
-          }
-        ),
+        Date: d.toLocaleDateString("en-GB", {
+          day: "2-digit",
+          month: "short",
+          year: "numeric"
+        }),
 
-        Status: r.attendance_status,
+        Status: isIncomplete
+          ? "ABSENT"
+          : r.attendance_status,
 
         In: r.punch_in
-          ? new Date(r.punch_in)
-              .toLocaleTimeString([], {
-                hour: "2-digit",
-                minute: "2-digit",
-                hour12: true
-              })
+          ? new Date(r.punch_in).toLocaleTimeString([], {
+              hour: "2-digit",
+              minute: "2-digit",
+              hour12: true
+            })
           : "--",
 
         Out: r.punch_out
-          ? new Date(r.punch_out)
-              .toLocaleTimeString([], {
-                hour: "2-digit",
-                minute: "2-digit",
-                hour12: true
-              })
+          ? new Date(r.punch_out).toLocaleTimeString([], {
+              hour: "2-digit",
+              minute: "2-digit",
+              hour12: true
+            })
           : "--",
 
         ProductionHours:
@@ -333,8 +329,7 @@ exports.getAttendanceHistory = async (userId) => {
 
         Late: lateMinutes,
 
-        EarlyLogout:
-          earlyLogoutMinutes
+        EarlyLogout: earlyLogoutMinutes
       });
 
     } else {
@@ -343,27 +338,18 @@ exports.getAttendanceHistory = async (userId) => {
 
         Id: null,
 
-        Date: d.toLocaleDateString(
-          "en-GB",
-          {
-            day: "2-digit",
-            month: "short",
-            year: "numeric"
-          }
-        ),
+        Date: d.toLocaleDateString("en-GB", {
+          day: "2-digit",
+          month: "short",
+          year: "numeric"
+        }),
 
-        Status: isSunday
-          ? "OFF"
-          : "ABSENT",
+        Status: isSunday ? "OFF" : "ABSENT",
 
         In: "--",
-
         Out: "--",
-
         ProductionHours: 0,
-
         Late: 0,
-
         EarlyLogout: 0
       });
     }

@@ -193,3 +193,37 @@ exports.updateUser = async (req, res, next) => {
     next(err);
   }
 };
+// =======================================
+// DELETE USER CONTROLLER
+// =======================================
+
+exports.deleteUser = async (req, res, next) => {
+  try {
+    const userId = req.params.id;
+
+    const response = await adminService.deleteUser(userId);
+
+    return res.status(200).json(response);
+
+  } catch (error) {
+    next(error);
+  }
+};
+
+
+// =======================================
+// DELETE ATTENDANCE CONTROLLER
+// =======================================
+
+exports.deleteAttendance = async (req, res, next) => {
+  try {
+    const attendanceId = req.params.id;
+
+    const response = await adminService.deleteAttendance(attendanceId);
+
+    return res.status(200).json(response);
+
+  } catch (error) {
+    next(error);
+  }
+};

@@ -79,4 +79,10 @@ router.put(
   controller.updateUser
 );
 
+router.delete("/delete/user/:id",authMiddleware,
+  authorizeRoles("ADMIN"), controller.deleteUser);
+
+// DELETE ATTENDANCE (Admin only)
+router.delete("/delete/attendance/:id",authMiddleware,
+  authorizeRoles("ADMIN"), controller.deleteAttendance);
 module.exports = router;
