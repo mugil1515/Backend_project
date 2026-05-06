@@ -29,7 +29,7 @@ router.get(
   "/admin/attendance/today",
   authMiddleware,
   authorizeRoles("ADMIN"),
-  controller.getTodayAttendance
+  controller.getTodayAttendanceList
 );
 
 router.get(

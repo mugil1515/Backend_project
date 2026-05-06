@@ -26,11 +26,11 @@ exports.getDashboard = async (req, res, next) => {
 // TODAY ATTENDANCE
 // ==========================
 
-exports.getTodayAttendance = async (req, res, next) => {
+exports.getTodayAttendanceList = async (req, res, next) => {
 
   try {
 
-    const data = await adminService.getTodayAttendance();
+    const data = await adminService.getTodayAttendanceList();
 
     return res.status(200).json({
       success: true,
