@@ -1,4 +1,5 @@
 const repo = require("../repository/attendanceRepository");
+const adminRepo=require('../repository/adminRepository')
 const {
   getLateMinutes,
   getEarlyMinutes
@@ -54,7 +55,7 @@ exports.punchIn = async ({
   // ========================================
 
   const existingAttendance =
-    await repo.getTodayAttendance(userId);
+    await adminRepo.getTodayAttendanceList(userId);
 
   if (existingAttendance) {
     throw new Error(
