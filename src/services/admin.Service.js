@@ -25,9 +25,9 @@ exports.getDashboard = async () => {
 // ==========================
 // TODAY ATTENDANCE
 // ==========================
-exports.getTodayAttendance = async () => {
+exports.getTodayAttendanceList = async () => {
 
-  const data = await adminRepo.getTodayAttendance();
+  const data = await adminRepo.getTodayAttendanceList();
 
   return data.map((r) => ({
     ...r,
