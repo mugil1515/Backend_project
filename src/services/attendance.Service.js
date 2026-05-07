@@ -1,29 +1,19 @@
 const repo = require("../repository/attendanceRepository");
-const adminRepo=require('../repository/adminRepository')
-const {
-  getLateMinutes,
-  getEarlyMinutes
-} = require("../utils/attendanceCalci");
 
 const {
   calculateDistance
-} = require("../utils/distanceutil.js");
+} = require("../utils/distanceUtil");
 
 const {
-  OFFICE_START_HOUR,
-  OFFICE_START_MINUTE,
-  OFFICE_END_HOUR,
-  OFFICE_END_MINUTE,
-  HALF_DAY_HOURS,
-  OFFICE_LAT,
-  OFFICE_LNG,
-  ALLOWED_RADIUS
-} = require("../config/attendance.config.js");
-
+  getOfficeStart,
+  getOfficeEnd,
+  formatIST,
+  formatDate
+} = require("../utils/offcTimeutil");
 
 
 // ========================================
-// PUNCH IN SERVICE
+// PUNCH IN
 // ========================================
 
 exports.punchIn = async ({
@@ -32,83 +22,25 @@ exports.punchIn = async ({
   longitude
 }) => {
 
-  // ========================================
-  // CHECK OFFICE LOCATION
-  // ========================================
+  const punchInTime = new Date();
 
-  const distance = calculateDistance(
-    latitude,
-    longitude,
-    OFFICE_LAT,
-    OFFICE_LNG
-  );
-
-  if (distance > ALLOWED_RADIUS) {
-    throw new Error(
-      "You are outside office location"
-    );
-  }
-
-
-  // ========================================
-  // CHECK ALREADY PUNCHED IN
-  // ========================================
-
-  const existingAttendance =
-    await adminRepo.getTodayAttendanceList(userId);
-
-  if (existingAttendance) {
-    throw new Error(
-      "Already punched in today"
-    );
-  }
-
-
-  // ========================================
-  // ATTENDANCE STATUS
-  // ========================================
-
-  const now = new Date();
-
-  const currentMinutes =
-    (now.getHours() * 60) +
-    now.getMinutes();
-
-  const officeStartMinutes =
-    (OFFICE_START_HOUR * 60) +
-    OFFICE_START_MINUTE;
-
-  let status = "PRESENT";
-
-  // After 9:30 AM => LATE
-
-  if (currentMinutes > officeStartMinutes) {
-    status = "LATE";
-  }
-
-
-  // ========================================
-  // CREATE ATTENDANCE
-  // ========================================
-
-  await repo.createAttendance({
+  await repo.punchIn({
     userId,
     latitude,
     longitude,
-    status
+    punchInTime,
+    status: "PRESENT"
   });
 
-
   return {
-    success: true,
-    message: "Punch in successful"
+    message: "Punch-in successful",
+    status: "PRESENT"
   };
 };
 
 
-
 // ========================================
-// PUNCH OUT SERVICE
+// PUNCH OUT
 // ========================================
 
 exports.punchOut = async ({
@@ -117,244 +49,193 @@ exports.punchOut = async ({
   longitude
 }) => {
 
-  // ========================================
-  // CHECK OFFICE LOCATION
-  // ========================================
+  const today = await repo.getTodayAttendance(userId);
 
-  const distance = calculateDistance(
+  if (!today) {
+    throw new Error("No punch-in found for today");
+  }
+
+  const punchOutTime = new Date();
+  const punchInTime = new Date(today.punch_in);
+
+  const diffMs = punchOutTime - punchInTime;
+  const workingHours = (diffMs / (1000 * 60 * 60)).toFixed(2);
+
+  await repo.punchOut({
+    userId,
     latitude,
     longitude,
-    OFFICE_LAT,
-    OFFICE_LNG
-  );
-
-  if (distance > ALLOWED_RADIUS) {
-    throw new Error(
-      "You are outside office location"
-    );
-  }
-
-
-  // ========================================
-  // FIND TODAY ATTENDANCE
-  // ========================================
-
-  const attendance =
-    await repo.getTodayAttendance(userId);
-
-  if (!attendance) {
-    throw new Error(
-      "Please punch in first"
-    );
-  }
-
-
-  // ========================================
-  // CHECK ALREADY PUNCHED OUT
-  // ========================================
-
-  if (attendance.punch_out) {
-    throw new Error(
-      "Already punched out"
-    );
-  }
-
-
-  // ========================================
-  // CALCULATE WORKING HOURS
-  // ========================================
-
-  const punchInTime =
-    new Date(attendance.punch_in);
-
-  const punchOutTime =
-    new Date();
-
-  const diffMs =
-    punchOutTime - punchInTime;
-
-  const workingHours =
-    Number(
-      (
-        diffMs /
-        (1000 * 60 * 60)
-      ).toFixed(2)
-    );
-
-
-  // ========================================
-  // ATTENDANCE STATUS
-  // ========================================
-
-  let status =
-    attendance.attendance_status;
-
-  // Less than 4 hours => HALF DAY
-
-  if (workingHours < HALF_DAY_HOURS) {
-    status = "HALF_DAY";
-  }
-
-
-  // ========================================
-  // UPDATE PUNCH OUT
-  // ========================================
-
-  await repo.updatePunchOut({
-    attendanceId: attendance.id,
-    latitude,
-    longitude,
+    punchOutTime,
     workingHours,
-    status
+    status: "PRESENT"
   });
 
-
   return {
-    success: true,
-    message: "Punch out successful",
-    workingHours
+    message: "Punch-out successful"
   };
 };
-
 
 
 // ========================================
 // GET TODAY ATTENDANCE
 // ========================================
 
-exports.getTodayAttendance =
-  async (userId) => {
+exports.getTodayAttendance = async (userId) => {
 
-   const attendance =
-  await repo.getTodayAttendance(userId);
+  const data = await repo.getTodayAttendance(userId);
 
-  if (!attendance) {
-    return {
-      isPunchedIn: false
-    };
+  if (!data) return null;
+
+  const punchInTime = data.punch_in ? new Date(data.punch_in) : null;
+  const punchOutTime = data.punch_out ? new Date(data.punch_out) : null;
+
+  const officeStart = getOfficeStart();
+  const officeEnd = getOfficeEnd();
+  const now = new Date();
+
+  // =========================
+  // WORKING HOURS
+  // =========================
+  let workingHours = "0.00";
+
+  if (punchInTime && punchOutTime) {
+    const diff = punchOutTime - punchInTime;
+    workingHours = (diff / (1000 * 60 * 60)).toFixed(2);
   }
 
+  // =========================
+  // LATE LOGIN (mins)
+  // =========================
+  let late_login_mins = 0;
+
+  if (punchInTime && punchInTime > officeStart) {
+    late_login_mins = Math.floor(
+      (punchInTime - officeStart) / (1000 * 60)
+    );
+  }
+
+  // =========================
+  // EARLY LOGOUT (mins)
+  // =========================
+  let early_logout_mins = 0;
+
+  if (punchOutTime && punchOutTime < officeEnd) {
+    early_logout_mins = Math.floor(
+      (officeEnd - punchOutTime) / (1000 * 60)
+    );
+  }
+
+  // =========================
+  // STATUS (NO LATE / HALF_DAY)
+  // =========================
+  let attendance_status = "ABSENT";
+
+  if (punchInTime) {
+
+    if (punchOutTime) {
+      attendance_status = "PRESENT";
+
+    } else if (now <= officeEnd) {
+      attendance_status = "PRESENT";
+
+    } else {
+      attendance_status = "ABSENT";
+    }
+  }
+
+  // =========================
+  // CLEAN RESPONSE
+  // =========================
   return {
-    isPunchedIn: true,
-
-  ...attendance,
-
-  late_minutes: getLateMinutes(attendance.punch_in),
-
-  early_logout_minutes: attendance.punch_out
-    ? getEarlyMinutes(attendance.punch_out)
-    : 0
-}
+  punch_in: formatIST(data.punch_in),
+  punch_out: formatIST(data.punch_out),
+  working_hours: workingHours,
+  attendance_status,
+  late_login_mins,
+  early_logout_mins
+};
 };
 
 
 // ========================================
 // GET ATTENDANCE HISTORY
 // ========================================
+
+
 exports.getAttendanceHistory = async (userId) => {
 
-  const history =
-    await repo.getAttendanceHistory(userId);
+  const rows = await repo.getAttendanceHistory(userId);
 
-  const map = new Map();
+  if (!rows || rows.length === 0) return [];
 
-  history.forEach((r) => {
+  return rows.map((data) => {
 
-    const key = new Date(
-      r.punch_in || r.created_at
-    ).toDateString();
+    const punchIn = data.punch_in ? new Date(data.punch_in) : null;
+    const punchOut = data.punch_out ? new Date(data.punch_out) : null;
 
-    map.set(key, r);
-  });
+    const officeStart = getOfficeStart();
+    const officeEnd = getOfficeEnd();
 
-  const result = [];
+    const now = new Date();
 
-  for (let i = 0; i < 30; i++) {
+    // ======================
+    // WORKING HOURS
+    // ======================
+    let workingHours = "0.00";
 
-    const d = new Date();
-    d.setDate(d.getDate() - i);
+    if (punchIn && punchOut) {
+      const diff = punchOut - punchIn;
+      workingHours = (diff / (1000 * 60 * 60)).toFixed(2);
+    }
 
-    const key = d.toDateString();
+    // ======================
+    // LATE LOGIN (mins)
+    // ======================
+    let late_login_mins = 0;
 
-    const r = map.get(key);
+    if (punchIn && punchIn > officeStart) {
+      late_login_mins = Math.floor(
+        (punchIn - officeStart) / (1000 * 60)
+      );
+    }
 
-    const lateMinutes = r?.punch_in
-      ? getLateMinutes(r.punch_in)
-      : 0;
+    // ======================
+    // EARLY LOGOUT (mins)
+    // ======================
+    let early_logout_mins = 0;
 
-    const earlyLogoutMinutes = r?.punch_out
-      ? getEarlyMinutes(r.punch_out)
-      : 0;
+    if (punchOut && punchOut < officeEnd) {
+      early_logout_mins = Math.floor(
+        (officeEnd - punchOut) / (1000 * 60)
+      );
+    }
 
-    const isSunday = d.getDay() === 0;
+    // ======================
+    // STATUS LOGIC
+    // ======================
+    let status = "ABSENT";
 
-    if (r) {
+    if (punchIn && punchOut) {
+      status = "PRESENT";
 
-      const isIncomplete =
-        r.punch_in && !r.punch_out;
-
-      result.push({
-
-        Id: r.id,
-
-        Date: d.toLocaleDateString("en-GB", {
-          day: "2-digit",
-          month: "short",
-          year: "numeric"
-        }),
-
-        Status: isIncomplete
-          ? "ABSENT"
-          : r.attendance_status,
-
-        In: r.punch_in
-          ? new Date(r.punch_in).toLocaleTimeString([], {
-              hour: "2-digit",
-              minute: "2-digit",
-              hour12: true
-            })
-          : "--",
-
-        Out: r.punch_out
-          ? new Date(r.punch_out).toLocaleTimeString([], {
-              hour: "2-digit",
-              minute: "2-digit",
-              hour12: true
-            })
-          : "--",
-
-        ProductionHours:
-          r.working_hours
-            ? Number(r.working_hours)
-            : 0,
-
-        Late: lateMinutes,
-
-        EarlyLogout: earlyLogoutMinutes
-      });
+    } else if (punchIn && now <= officeEnd) {
+      status = "PRESENT";
 
     } else {
-
-      result.push({
-
-        Id: null,
-
-        Date: d.toLocaleDateString("en-GB", {
-          day: "2-digit",
-          month: "short",
-          year: "numeric"
-        }),
-
-        Status: isSunday ? "OFF" : "ABSENT",
-
-        In: "--",
-        Out: "--",
-        ProductionHours: 0,
-        Late: 0,
-        EarlyLogout: 0
-      });
+      status = "ABSENT";
     }
-  }
 
-  return result.reverse();
+    // ======================
+    // FINAL RESPONSE
+    // ======================
+    return {
+      date: formatDate(data.punch_in),
+      punch_in: formatIST(data.punch_in),
+      punch_out: formatIST(data.punch_out),
+      status,
+      working_hours: workingHours,
+      late_login_mins,
+      early_logout_mins
+    };
+  });
 };

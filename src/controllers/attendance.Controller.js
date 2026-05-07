@@ -72,7 +72,7 @@ exports.punchOut = async (
       message:
         result.message,
 
-      data: result
+      
     });
 
   } catch (error) {

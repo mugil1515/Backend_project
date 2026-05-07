@@ -1,14 +1,17 @@
 const db = require("../config/db");
 
-// =========================
-// CREATE ATTENDANCE (PUNCH IN)
-// =========================
-exports.createAttendance = async ({
+// ========================================
+// PUNCH IN
+// ========================================
+
+exports.punchIn = async ({
   userId,
   latitude,
   longitude,
+  punchInTime,
   status
 }) => {
+
   const [result] = await db.query(
     `
     INSERT INTO attendance (
@@ -18,80 +21,99 @@ exports.createAttendance = async ({
       punch_in_lng,
       attendance_status
     )
-    VALUES (?, NOW(), ?, ?, ?)
+    VALUES (?, ?, ?, ?, ?)
     `,
-    [userId, latitude, longitude, status]
+    [
+      userId,
+      punchInTime,
+      latitude,
+      longitude,
+      status
+    ]
   );
 
   return result;
 };
 
-// =========================
-// GET TODAY ATTENDANCE
-// =========================
-exports.getTodayAttendance = async (userId) => {
-  const [rows] = await db.query(
-    `
-    SELECT
-      id,
-      punch_in,
-      punch_out,
-      working_hours,
-      attendance_status,
-      created_at
-    FROM attendance
-    WHERE user_id = ?
-    AND DATE(punch_in) = CURDATE()
-    `,
-    [userId]
-  );
 
-  return rows.length > 0 ? rows[0] : null;
-};
+// ========================================
+// PUNCH OUT
+// ========================================
 
-// =========================
-// UPDATE PUNCH OUT
-// =========================
-exports.updatePunchOut = async ({
-  attendanceId,
+exports.punchOut = async ({
+  userId,
   latitude,
   longitude,
+  punchOutTime,
   workingHours,
   status
 }) => {
+
   const [result] = await db.query(
     `
     UPDATE attendance
-    SET
-      punch_out = NOW(),
+    SET 
+      punch_out = ?,
       punch_out_lat = ?,
       punch_out_lng = ?,
       working_hours = ?,
       attendance_status = ?
-    WHERE id = ?
+    WHERE user_id = ?
+      AND DATE(punch_in) = CURDATE()
     `,
-    [latitude, longitude, workingHours, status, attendanceId]
+    [
+      punchOutTime,
+      latitude,
+      longitude,
+      workingHours,
+      status,
+      userId
+    ]
   );
 
   return result;
 };
 
-// =========================
+
+// ========================================
+// GET TODAY ATTENDANCE
+// ========================================
+
+exports.getTodayAttendance = async (userId) => {
+
+  const [rows] = await db.query(
+    `
+    SELECT *
+    FROM attendance
+    WHERE user_id = ?
+      AND DATE(punch_in) = CURDATE()
+    LIMIT 1
+    `,
+    [userId]
+  );
+
+  return rows[0] || null;
+};
+
+
+// ========================================
 // GET ATTENDANCE HISTORY
-// =========================
+// ========================================
 
 exports.getAttendanceHistory = async (userId) => {
+
   const [rows] = await db.query(
     `
     SELECT
       id,
+      user_id,
       punch_in,
       punch_out,
       working_hours,
-      attendance_status,
-      created_at
+      attendance_status
     FROM attendance
     WHERE user_id = ?
+      AND DATE(punch_in) >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)
     ORDER BY punch_in DESC
     `,
     [userId]
