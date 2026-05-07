@@ -1,21 +1,5 @@
 const db = require("../config/db");
 
-// =======================================
-// TOTAL USERS
-// =======================================
-
-exports.getTotalUsers = async () => {
-
-  const [rows] = await db.query(`
-
-    SELECT COUNT(*) AS total
-    FROM users
-    WHERE role = 'USER'
-  `);
-
-  return rows[0].total;
-};
-
 
 // =======================================
 // PRESENT TODAY
@@ -161,8 +145,7 @@ exports.getAllAttendance = async ({
       a.punch_in,
       a.punch_out,
       a.working_hours,
-      a.attendance_status,
-      a.created_at
+      a.attendance_status
 
     FROM attendance a
 
@@ -383,7 +366,7 @@ exports.getAllUsers = async () => {
       email,
       contactno,
       role,
-      created_at
+      address
 
     FROM users
 

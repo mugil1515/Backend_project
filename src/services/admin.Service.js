@@ -63,6 +63,7 @@ exports.getAllAttendance = async (query) => {
     firstname: r.firstname,
     lastname: r.lastname,
     email: r.email,
+    address:r.address,
     punch_in: r.punch_in,
     punch_out: r.punch_out,
     working_hours: r.working_hours,
