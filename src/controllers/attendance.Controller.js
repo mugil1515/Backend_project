@@ -4,38 +4,26 @@ const attendanceService = require("../services/attendance.service");
 // PUNCH IN
 // ========================================
 
-exports.punchIn = async (
-  req,
-  res,
-  next
-) => {
+exports.punchIn = async (req, res, next) => {
 
   try {
 
-    const result =
-      await attendanceService.punchIn({
+    const result = await attendanceService.punchIn({
 
-        userId: req.user.id,
+      userId: req.user?.id || req.user?.userId,
 
-        latitude:
-          req.body.latitude,
+      latitude: req.body.latitude,
 
-        longitude:
-          req.body.longitude
-      });
+      longitude: req.body.longitude
+    });
 
     return res.status(201).json({
-
       success: true,
-
-      message:
-        result.message,
-
-      data: result
+      message: result.message,
+      status: result.status
     });
 
   } catch (error) {
-
     next(error);
   }
 };

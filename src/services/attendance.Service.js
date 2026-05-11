@@ -22,6 +22,15 @@ exports.punchIn = async ({
   longitude
 }) => {
 
+  // =========================
+  // CHECK ALREADY PUNCHED IN
+  // =========================
+  const existing = await repo.getTodayPunchIn(userId);
+
+  if (existing) {
+    throw new Error("Already punched in today");
+  }
+
   const punchInTime = new Date();
 
   await repo.punchIn({
@@ -37,7 +46,6 @@ exports.punchIn = async ({
     status: "PRESENT"
   };
 };
-
 
 // ========================================
 // PUNCH OUT
@@ -161,26 +169,73 @@ exports.getTodayAttendance = async (userId) => {
 // GET ATTENDANCE HISTORY
 // ========================================
 
-
 exports.getAttendanceHistory = async (userId) => {
 
   const rows = await repo.getAttendanceHistory(userId);
 
-  if (!rows || rows.length === 0) return [];
+  // Map DB data by date (YYYY-MM-DD)
+  const attendanceMap = {};
 
-  return rows.map((data) => {
+  rows.forEach((item) => {
+    const date = new Date(item.punch_in).toISOString().split("T")[0];
+    attendanceMap[date] = item;
+  });
 
+  const result = [];
+
+  for (let i = 29; i >= 0; i--) {
+
+    const dateObj = new Date();
+    dateObj.setDate(dateObj.getDate() - i);
+
+    const dateStr = dateObj.toISOString().split("T")[0];
+
+    const isSunday = dateObj.getDay() === 0;
+
+    const data = attendanceMap[dateStr];
+
+    // ======================
+    // IF SUNDAY → OFF
+    // ======================
+    if (isSunday) {
+      result.push({
+        date: dateStr,
+        status: "OFF",
+        punch_in: null,
+        punch_out: null,
+        working_hours: "0.00",
+        late_login_mins: 0,
+        early_logout_mins: 0
+      });
+      continue;
+    }
+
+    // ======================
+    // IF NO DATA → ABSENT
+    // ======================
+    if (!data) {
+      result.push({
+        date: dateStr,
+        status: "ABSENT",
+        punch_in: null,
+        punch_out: null,
+        working_hours: "0.00",
+        late_login_mins: 0,
+        early_logout_mins: 0
+      });
+      continue;
+    }
+
+    // ======================
+    // IF DATA EXISTS → CALCULATE
+    // ======================
     const punchIn = data.punch_in ? new Date(data.punch_in) : null;
     const punchOut = data.punch_out ? new Date(data.punch_out) : null;
 
     const officeStart = getOfficeStart();
     const officeEnd = getOfficeEnd();
-
     const now = new Date();
 
-    // ======================
-    // WORKING HOURS
-    // ======================
     let workingHours = "0.00";
 
     if (punchIn && punchOut) {
@@ -188,54 +243,36 @@ exports.getAttendanceHistory = async (userId) => {
       workingHours = (diff / (1000 * 60 * 60)).toFixed(2);
     }
 
-    // ======================
-    // LATE LOGIN (mins)
-    // ======================
     let late_login_mins = 0;
 
     if (punchIn && punchIn > officeStart) {
-      late_login_mins = Math.floor(
-        (punchIn - officeStart) / (1000 * 60)
-      );
+      late_login_mins = Math.floor((punchIn - officeStart) / (1000 * 60));
     }
 
-    // ======================
-    // EARLY LOGOUT (mins)
-    // ======================
     let early_logout_mins = 0;
 
     if (punchOut && punchOut < officeEnd) {
-      early_logout_mins = Math.floor(
-        (officeEnd - punchOut) / (1000 * 60)
-      );
+      early_logout_mins = Math.floor((officeEnd - punchOut) / (1000 * 60));
     }
 
-    // ======================
-    // STATUS LOGIC
-    // ======================
     let status = "ABSENT";
 
     if (punchIn && punchOut) {
       status = "PRESENT";
-
     } else if (punchIn && now <= officeEnd) {
       status = "PRESENT";
-
-    } else {
-      status = "ABSENT";
     }
 
-    // ======================
-    // FINAL RESPONSE
-    // ======================
-    return {
-      date: formatDate(data.punch_in),
+    result.push({
+      date: dateStr,
+      status,
       punch_in: formatIST(data.punch_in),
       punch_out: formatIST(data.punch_out),
-      status,
       working_hours: workingHours,
       late_login_mins,
       early_logout_mins
-    };
-  });
+    });
+  }
+
+  return result;
 };

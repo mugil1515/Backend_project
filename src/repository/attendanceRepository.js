@@ -8,8 +8,7 @@ exports.punchIn = async ({
   userId,
   latitude,
   longitude,
-  punchInTime,
-  status
+  punchInTime
 }) => {
 
   const [result] = await db.query(
@@ -28,13 +27,29 @@ exports.punchIn = async ({
       punchInTime,
       latitude,
       longitude,
-      status
+      "PRESENT" 
     ]
   );
 
   return result;
 };
 
+exports.getTodayPunchIn = async (userId) => {
+
+  const [rows] = await db.query(
+    `
+    SELECT id
+    FROM attendance
+    WHERE user_id = ?
+      AND DATE(punch_in) = CURDATE()
+      AND punch_out IS NULL
+    LIMIT 1
+    `,
+    [userId]
+  );
+
+  return rows.length > 0 ? rows[0] : null;
+};
 
 // ========================================
 // PUNCH OUT
@@ -113,7 +128,7 @@ exports.getAttendanceHistory = async (userId) => {
       attendance_status
     FROM attendance
     WHERE user_id = ?
-      AND DATE(punch_in) >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)
+      AND punch_in >= DATE_SUB(NOW(), INTERVAL 30 DAY)
     ORDER BY punch_in DESC
     `,
     [userId]
