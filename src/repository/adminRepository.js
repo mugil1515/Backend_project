@@ -491,25 +491,31 @@ exports.getAdminById = async (
   return rows[0];
 };
 
+exports.updateAdmin = async ({ adminId, ...fields }) => {
 
-exports.updateAdmin = async ({
-  adminId,
-  ...fields
-}) => {
+  // ✅ Allow only valid DB columns
+  const allowedFields = [
+    "firstname",
+    "lastname",
+    "email",
+    "contactno",
+    "address",
+    "role"
+  ];
 
-  const keys = Object.keys(fields);
+  const keys = Object.keys(fields).filter(key =>
+    allowedFields.includes(key)
+  );
 
   if (keys.length === 0) {
-    throw new Error("No fields provided");
+    throw new Error("No valid fields provided");
   }
 
   const setClause = keys
     .map(key => `${key} = ?`)
     .join(", ");
 
-  const values = keys.map(
-    key => fields[key]
-  );
+  const values = keys.map(key => fields[key]);
 
   const [result] = await db.query(
     `
