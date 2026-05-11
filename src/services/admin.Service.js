@@ -253,3 +253,74 @@ exports.deleteAttendance = async (attendanceId) => {
     message: "Attendance deleted successfully"
   };
 };
+
+// GET ADMIN BY ID
+
+exports.getAdminById = async (
+  adminId
+) => {
+
+  if (!adminId) {
+    const err = new Error(
+      "Admin ID required"
+    );
+    err.status = 400;
+    throw err;
+  }
+
+  const admin =
+    await adminRepo.getAdminById(adminId);
+
+  if (!admin) {
+    const err = new Error(
+      "Admin not found"
+    );
+    err.status = 404;
+    throw err;
+  }
+
+  return admin;
+};
+
+exports.updateAdmin = async (
+  adminId,
+  body
+) => {
+
+  if (!adminId) {
+    const err = new Error("Admin ID is required");
+    err.status = 400;
+    throw err;
+  }
+
+  const filteredBody = Object.fromEntries(
+    Object.entries(body || {}).filter(
+      ([_, value]) => value !== undefined
+    )
+  );
+
+  if (Object.keys(filteredBody).length === 0) {
+    const err = new Error(
+      "No data provided to update"
+    );
+    err.status = 400;
+    throw err;
+  }
+
+  const existingAdmin =
+    await adminRepo.getAdminById(adminId);
+
+  if (!existingAdmin) {
+    const err = new Error("Admin not found");
+    err.status = 404;
+    throw err;
+  }
+
+  const result =
+    await adminRepo.updateAdmin({
+      adminId,
+      ...filteredBody
+    });
+
+  return result;
+};

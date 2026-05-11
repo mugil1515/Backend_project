@@ -86,3 +86,10 @@ router.delete("/delete/user/:id",authMiddleware,
 router.delete("/delete/attendance/:id",authMiddleware,
   authorizeRoles("ADMIN"), controller.deleteAttendance);
 module.exports = router;
+
+router.put(
+  "/admin/profile/:id",
+  authMiddleware,
+  authorizeRoles("ADMIN"),
+  controller.updateAdmin
+);

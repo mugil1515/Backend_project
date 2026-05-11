@@ -465,3 +465,61 @@ exports.deleteAttendance = async (attendanceId) => {
 
   return result;
 };
+
+
+exports.getAdminById = async (
+  adminId
+) => {
+
+  const [rows] = await db.query(
+    `
+    SELECT
+      id,
+      firstname,
+      lastname,
+      email,
+      contactno,
+      address,
+      role
+    FROM users
+    WHERE id = ?
+    AND role = 'ADMIN'
+    `,
+    [adminId]
+  );
+
+  return rows[0];
+};
+
+
+exports.updateAdmin = async ({
+  adminId,
+  ...fields
+}) => {
+
+  const keys = Object.keys(fields);
+
+  if (keys.length === 0) {
+    throw new Error("No fields provided");
+  }
+
+  const setClause = keys
+    .map(key => `${key} = ?`)
+    .join(", ");
+
+  const values = keys.map(
+    key => fields[key]
+  );
+
+  const [result] = await db.query(
+    `
+    UPDATE users
+    SET ${setClause}
+    WHERE id = ?
+    AND role = 'ADMIN'
+    `,
+    [...values, adminId]
+  );
+
+  return result;
+};
