@@ -172,30 +172,38 @@ exports.getUserById = async (id) => {
 exports.updateUser = async (id, body) => {
 
   if (!id) {
-    const err = new Error("User ID required");
+    const err = new Error("User ID is required");
     err.status = 400;
     throw err;
   }
 
-  if (!body || Object.keys(body).length === 0) {
-    const err = new Error("No data to update");
+  const filteredBody = Object.fromEntries(
+    Object.entries(body || {}).filter(
+      ([_, value]) => value !== undefined
+    )
+  );
+
+  if (Object.keys(filteredBody).length === 0) {
+    const err = new Error("No data provided to update");
     err.status = 400;
     throw err;
   }
 
-  const existing = await adminRepo.getUserById(id);
+  const existingUser = await adminRepo.getUserById(id);
 
-  if (!existing) {
+  if (!existingUser) {
     const err = new Error("User not found");
     err.status = 404;
     throw err;
   }
 
-  await adminRepo.updateUser(id, body);
+  const result = await adminRepo.updateUser({
+    userId: id,
+    ...filteredBody
+  });
 
-  return true;
+  return result;
 };
-
 // ==========================
 // DELETE USER
 // ==========================

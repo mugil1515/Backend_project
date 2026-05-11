@@ -410,29 +410,38 @@ exports.getUserById = async (userId) => {
 // UPDATE USER
 // =======================================
 
-exports.updateUser = async ({
-  userId,
-  firstname,
-  lastname,
-  contactno,
-  is_active
-}) => {
+exports.updateUser = async ({ userId, ...fields }) => {
 
-  const [result] = await db.query(`
+  if (!userId) {
+    throw new Error("User ID is required");
+  }
 
+  const filteredFields = Object.fromEntries(
+    Object.entries(fields).filter(
+      ([_, value]) => value !== undefined
+    )
+  );
+
+  const keys = Object.keys(filteredFields);
+
+  if (keys.length === 0) {
+    throw new Error("No fields provided");
+  }
+
+  const setClause = keys
+    .map(key => `${key} = ?`)
+    .join(", ");
+
+  const values = keys.map(key => filteredFields[key]);
+
+  const [result] = await db.query(
+    `
     UPDATE users
-    SET
-      firstname = ?,
-      lastname = ?,
-      contactno = ?
+    SET ${setClause}
     WHERE id = ?
-
-  `, [
-    firstname,
-    lastname,
-    contactno,
-    userId
-  ]);
+    `,
+    [...values, userId]
+  );
 
   return result;
 };

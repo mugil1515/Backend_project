@@ -168,29 +168,24 @@ exports.getUserById = async (req, res, next) => {
 // ==========================
 // UPDATE USER
 // ==========================
-
 exports.updateUser = async (req, res, next) => {
 
   try {
-    if (!req.body) {
-      return res.status(400).json({
-        success: false,
-        message: "request_body_missing"
-      });
-    }
 
-    const data = await adminService.updateUser(
-      req.params.id,
+    const id = req.params.id;
+
+    const result = await adminService.updateUser(
+      id,
       req.body
     );
 
-    return res.status(200).json({
+    res.status(200).json({
       success: true,
-      message: "User updated",
+      message: "User updated successfully",
     });
 
-  } catch (err) {
-    next(err);
+  } catch (error) {
+    next(error);
   }
 };
 // =======================================
