@@ -115,6 +115,8 @@ exports.getTodayAttendance = async (userId) => {
 // GET ATTENDANCE HISTORY
 // ========================================
 
+
+
 exports.getAttendanceHistory = async (userId) => {
 
   const [rows] = await db.query(
@@ -128,7 +130,7 @@ exports.getAttendanceHistory = async (userId) => {
       attendance_status
     FROM attendance
     WHERE user_id = ?
-      AND punch_in >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+      AND DATE(punch_in) >= CURDATE() - INTERVAL 29 DAY
     ORDER BY punch_in DESC
     `,
     [userId]
