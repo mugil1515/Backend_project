@@ -26,14 +26,11 @@ exports.getDashboard = async () => {
 // TODAY ATTENDANCE
 // ==========================
 exports.getTodayAttendanceList = async () => {
-
   const data = await adminRepo.getTodayAttendanceList();
-
   return data.map((r) => ({
     ...r,
-    lateMinutes: r.punch_in
-      ? getLateMinutes(r.punch_in)
-      : 0
+    lateMinutes: r.punch_in ? getLateMinutes(r.punch_in) : 0,
+    earlyLogoutMinutes: r.punch_out ? getEarlyMinutes(r.punch_out) : 0  // 👈 add
   }));
 };
 
