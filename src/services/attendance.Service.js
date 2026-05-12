@@ -194,8 +194,6 @@ exports.getAttendanceHistory = async (userId) => {
 
   const rows = await repo.getAttendanceHistory(userId);
 
-  console.log("USER ID:", userId);
-console.log("ROWS:", rows);
 
   // =====================================
   // IST DATE FORMATTER
@@ -257,9 +255,6 @@ console.log("ROWS:", rows);
 
     const data = attendanceMap[dateStr];
 
-console.log("ATTENDANCE MAP:", attendanceMap);
-console.log("DATE STRING:", dateStr);
-console.log("MATCHED DATA:", data);
 
     // =====================================
     // SUNDAY
