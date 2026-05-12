@@ -93,3 +93,10 @@ router.put(
   authorizeRoles("ADMIN"),
   controller.updateAdmin
 );
+
+router.get(
+  "/admin/attendance/monthly/:userId",
+  authMiddleware,
+  authorizeRoles("ADMIN"),
+  controller.getUserMonthlyAttendance
+);

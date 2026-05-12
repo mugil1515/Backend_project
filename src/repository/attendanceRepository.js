@@ -121,16 +121,9 @@ exports.getAttendanceHistory = async (userId) => {
 
   const [rows] = await db.query(
     `
-    SELECT
-      id,
-      user_id,
-      punch_in,
-      punch_out,
-      working_hours,
-      attendance_status
+    SELECT *
     FROM attendance
     WHERE user_id = ?
-      AND DATE(punch_in) >= CURDATE() - INTERVAL 29 DAY
     ORDER BY punch_in DESC
     `,
     [userId]

@@ -1,4 +1,5 @@
 const adminService = require("../services/admin.Service");
+const attendanceService=require("../services/attendance.Service")
 
 
 // ==========================
@@ -273,5 +274,29 @@ exports.updateAdmin = async (
 
   } catch (error) {
     next(error);
+  }
+};
+
+exports.getUserMonthlyAttendance = async (req, res) => {
+
+  try {
+
+    const userId = req.params.userId;
+
+    const data = await attendanceService.getAttendanceHistory(userId);
+
+    res.json({
+      success: true,
+      data
+    });
+
+  } catch (error) {
+
+    console.log(error);
+
+    res.status(500).json({
+      success: false,
+      message: "Server Error"
+    });
   }
 };
