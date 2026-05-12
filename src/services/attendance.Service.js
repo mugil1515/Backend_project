@@ -180,7 +180,7 @@ exports.getTodayAttendance = async (userId) => {
   punch_in: formatIST(data.punch_in),
   punch_out: formatIST(data.punch_out),
   working_hours: workingHours,
-  attendance_status,
+  status:attendance_status,
   late_login_mins,
   early_logout_mins
 };
