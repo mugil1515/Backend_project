@@ -194,74 +194,46 @@ exports.getAttendanceHistory = async (userId) => {
 
   const rows = await repo.getAttendanceHistory(userId);
 
-
-  // =====================================
-  // IST DATE FORMATTER
-  // =====================================
-
   const getISTDate = (date) => {
     return new Date(date).toLocaleDateString("en-CA", {
-      timeZone: "Asia/Kolkata"
+      timeZone: "Asia/Kolkata",
     });
   };
-
-  // =====================================
-  // BUILD ATTENDANCE MAP
-  // =====================================
 
   const attendanceMap = {};
 
   rows.forEach((item) => {
 
-    if (!item.punch_in) return;
+    // IMPORTANT: use date column fallback if punch_in is null
+    const baseDate = item.punch_in || item.date;
 
-    const dateKey = getISTDate(item.punch_in);
+    if (!baseDate) return;
+
+    const dateKey = getISTDate(baseDate);
 
     attendanceMap[dateKey] = item;
   });
 
   const result = [];
 
-  // =====================================
-  // LAST 30 DAYS
-  // =====================================
-
   for (let i = 29; i >= 0; i--) {
 
     const currentDate = new Date();
-
     currentDate.setDate(currentDate.getDate() - i);
-
-    // =====================================
-    // DATE KEY (IST)
-    // =====================================
 
     const dateStr = getISTDate(currentDate);
 
-    // =====================================
-    // DAY NAME (IST SAFE)
-    // =====================================
-
     const dayName = currentDate.toLocaleDateString("en-US", {
       weekday: "short",
-      timeZone: "Asia/Kolkata"
+      timeZone: "Asia/Kolkata",
     });
 
     const isSunday = dayName === "Sun";
 
-    // =====================================
-    // GET ATTENDANCE
-    // =====================================
-
     const data = attendanceMap[dateStr];
 
-
-    // =====================================
-    // SUNDAY
-    // =====================================
-
+    // OFF DAY
     if (isSunday) {
-
       result.push({
         date: dateStr,
         status: "OFF",
@@ -269,18 +241,13 @@ exports.getAttendanceHistory = async (userId) => {
         punch_out: null,
         working_hours: "0.00",
         late_login_mins: 0,
-        early_logout_mins: 0
+        early_logout_mins: 0,
       });
-
       continue;
     }
 
-    // =====================================
     // ABSENT
-    // =====================================
-
-    if (!data) {
-
+    if (!data || (!data.punch_in && !data.punch_out)) {
       result.push({
         date: dateStr,
         status: "ABSENT",
@@ -288,75 +255,48 @@ exports.getAttendanceHistory = async (userId) => {
         punch_out: null,
         working_hours: "0.00",
         late_login_mins: 0,
-        early_logout_mins: 0
+        early_logout_mins: 0,
       });
-
       continue;
     }
 
-    // =====================================
-    // PUNCH TIMES
-    // =====================================
-
-    const punchIn = data.punch_in
-      ? new Date(data.punch_in)
-      : null;
-
-    const punchOut = data.punch_out
-      ? new Date(data.punch_out)
-      : null;
+    const punchIn = data.punch_in ? new Date(data.punch_in) : null;
+    const punchOut = data.punch_out ? new Date(data.punch_out) : null;
 
     const officeStart = getOfficeStart();
     const officeEnd = getOfficeEnd();
 
-    // =====================================
-    // WORKING HOURS
-    // =====================================
-
     let workingHours = "0.00";
 
     if (punchIn && punchOut) {
-
       const diff = punchOut - punchIn;
-
-      workingHours = (
-        diff / (1000 * 60 * 60)
-      ).toFixed(2);
+      workingHours = (diff / (1000 * 60 * 60)).toFixed(2);
     }
-
-    // =====================================
-    // LATE LOGIN
-    // =====================================
 
     let late_login_mins = 0;
 
     if (punchIn && punchIn > officeStart) {
-
-      late_login_mins = Math.floor(
-        (punchIn - officeStart) / (1000 * 60)
-      );
+      late_login_mins = Math.floor((punchIn - officeStart) / (1000 * 60));
     }
-
-    // =====================================
-    // EARLY LOGOUT
-    // =====================================
 
     let early_logout_mins = 0;
 
     if (punchOut && punchOut < officeEnd) {
-
-      early_logout_mins = Math.floor(
-        (officeEnd - punchOut) / (1000 * 60)
-      );
+      early_logout_mins = Math.floor((officeEnd - punchOut) / (1000 * 60));
     }
 
-    // =====================================
-    // PRESENT
-    // =====================================
+    // FINAL STATUS FIX
+    let status = "ABSENT";
+
+    if (punchIn && punchOut) {
+      status = "PRESENT";
+    } else if (punchIn) {
+      status = "PRESENT";
+    }
 
     result.push({
       date: dateStr,
-      status: "PRESENT",
+      status,
       punch_in: data.punch_in
         ? formatIST(data.punch_in)
         : null,
@@ -365,7 +305,7 @@ exports.getAttendanceHistory = async (userId) => {
         : null,
       working_hours: workingHours,
       late_login_mins,
-      early_logout_mins
+      early_logout_mins,
     });
   }
 
