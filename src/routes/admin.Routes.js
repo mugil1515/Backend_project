@@ -1,18 +1,12 @@
 const express = require("express");
-
 const router = express.Router();
-
 const controller = require("../controllers/admin.Controller");
-
-const authMiddleware= require("../middlewares/authMiddleware");
-
+const authMiddleware = require("../middlewares/authMiddleware");
 const authorizeRoles = require("../middlewares/roleMiddleware");
-
 
 // ==========================
 // DASHBOARD
 // ==========================
-
 router.get(
   "/admin/dashboard",
   authMiddleware,
@@ -20,11 +14,9 @@ router.get(
   controller.getDashboard
 );
 
-
 // ==========================
 // ATTENDANCE
 // ==========================
-
 router.get(
   "/admin/attendance/today",
   authMiddleware,
@@ -32,8 +24,18 @@ router.get(
   controller.getTodayAttendanceList
 );
 
+// ✅ specific routes BEFORE /:id param routes
 router.get(
-  "/admin/allattendance",
+  "/admin/attendance/monthly/:userId",
+  authMiddleware,
+  authorizeRoles("ADMIN"),
+  controller.getUserMonthlyAttendance
+);
+
+// ALL ATTENDANCE WITH FILTERS
+// ?month=2026-05 | ?date=2026-05-12 | ?status=PRESENT | ?search=hello | ?page=1&limit=10
+router.get(
+  "/admin/attendance",
   authMiddleware,
   authorizeRoles("ADMIN"),
   controller.getAllAttendance
@@ -53,11 +55,16 @@ router.put(
   controller.updateAttendance
 );
 
+router.delete(
+  "/delete/attendance/:id",
+  authMiddleware,
+  authorizeRoles("ADMIN"),
+  controller.deleteAttendance
+);
 
 // ==========================
 // USERS
 // ==========================
-
 router.get(
   "/admin/users",
   authMiddleware,
@@ -79,24 +86,29 @@ router.put(
   controller.updateUser
 );
 
-router.delete("/delete/user/:id",authMiddleware,
-  authorizeRoles("ADMIN"), controller.deleteUser);
+router.delete(
+  "/delete/user/:id",
+  authMiddleware,
+  authorizeRoles("ADMIN"),
+  controller.deleteUser
+);
 
-// DELETE ATTENDANCE (Admin only)
-router.delete("/delete/attendance/:id",authMiddleware,
-  authorizeRoles("ADMIN"), controller.deleteAttendance);
-module.exports = router;
+// ==========================
+// ADMIN PROFILE
+// ==========================
+router.get(
+  "/admin/profile",
+  authMiddleware,
+  authorizeRoles("ADMIN"),
+  controller.getAdminProfile
+);
 
 router.put(
-  "/admin/profile/:id",
+  "/admin/profile",
   authMiddleware,
   authorizeRoles("ADMIN"),
   controller.updateAdmin
 );
 
-router.get(
-  "/admin/attendance/monthly/:userId",
-  authMiddleware,
-  authorizeRoles("ADMIN"),
-  controller.getUserMonthlyAttendance
-);
+// ✅ module.exports ALWAYS at the bottom
+module.exports = router;

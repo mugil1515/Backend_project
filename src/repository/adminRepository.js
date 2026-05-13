@@ -123,19 +123,10 @@ exports.getTodayAttendanceList = async () => {
 // =======================================
 // GET ALL ATTENDANCE
 // =======================================
-
-exports.getAllAttendance = async ({
-  page,
-  limit,
-  search,
-  status,
-  date
-}) => {
-
+exports.getAllAttendance = async ({ page, limit, search, status, date, month }) => {
   const offset = (page - 1) * limit;
 
   let query = `
-
     SELECT
       a.id,
       u.id AS user_id,
@@ -146,155 +137,73 @@ exports.getAllAttendance = async ({
       a.punch_out,
       a.working_hours,
       a.attendance_status
-
     FROM attendance a
-
-    INNER JOIN users u
-    ON a.user_id = u.id
-
+    INNER JOIN users u ON a.user_id = u.id
     WHERE 1=1
   `;
 
   const values = [];
 
-
-
-  // SEARCH
   if (search) {
-
-    query += `
-      AND (
-        u.firstname LIKE ?
-        OR u.lastname LIKE ?
-        OR u.email LIKE ?
-      )
-    `;
-
-    values.push(
-      `%${search}%`,
-      `%${search}%`,
-      `%${search}%`
-    );
+    query += ` AND (u.firstname LIKE ? OR u.lastname LIKE ? OR u.email LIKE ?)`;
+    values.push(`%${search}%`, `%${search}%`, `%${search}%`);
   }
 
-
-
-  // STATUS FILTER
   if (status) {
-
-    query += `
-      AND a.attendance_status = ?
-    `;
-
+    query += ` AND a.attendance_status = ?`;
     values.push(status);
   }
 
-
-
-  // DATE FILTER
   if (date) {
-
-    query += `
-      AND DATE(a.punch_in) = ?
-    `;
-
+    // exact date: "2026-05-12"
+    query += ` AND DATE(a.punch_in) = ?`;
     values.push(date);
+  } else if (month) {
+    // month: "2026-05"
+    query += ` AND DATE_FORMAT(a.punch_in, '%Y-%m') = ?`;
+    values.push(month);
   }
 
+  query += ` ORDER BY a.punch_in DESC LIMIT ? OFFSET ?`;
+  values.push(Number(limit), Number(offset));
 
-
-  query += `
-    ORDER BY a.created_at DESC
-    LIMIT ?
-    OFFSET ?
-  `;
-
-  values.push(
-    Number(limit),
-    Number(offset)
-  );
-
-  const [rows] = await db.query(
-    query,
-    values
-  );
-
+  const [rows] = await db.query(query, values);
   return rows;
 };
-
-
 // =======================================
 // TOTAL ATTENDANCE COUNT
 // =======================================
-
-exports.getAttendanceCount = async ({
-  search,
-  status,
-  date
-}) => {
-
+exports.getAttendanceCount = async ({ search, status, date, month }) => {
   let query = `
     SELECT COUNT(*) AS total
     FROM attendance a
-    INNER JOIN users u
-    ON a.user_id = u.id
+    INNER JOIN users u ON a.user_id = u.id
     WHERE 1=1
   `;
 
   const values = [];
 
-
-
-  // SEARCH
   if (search) {
-
-    query += `
-      AND (
-        u.firstname LIKE ?
-        OR u.lastname LIKE ?
-        OR u.email LIKE ?
-      )
-    `;
-
-    values.push(
-      `%${search}%`,
-      `%${search}%`,
-      `%${search}%`
-    );
+    query += ` AND (u.firstname LIKE ? OR u.lastname LIKE ? OR u.email LIKE ?)`;
+    values.push(`%${search}%`, `%${search}%`, `%${search}%`);
   }
 
-
-
-  // STATUS
   if (status) {
-
-    query += `
-      AND a.attendance_status = ?
-    `;
-
+    query += ` AND a.attendance_status = ?`;
     values.push(status);
   }
 
-
-
-  // DATE
   if (date) {
-
-    query += `
-      AND DATE(a.punch_in) = ?
-    `;
-
+    query += ` AND DATE(a.punch_in) = ?`;
     values.push(date);
+  } else if (month) {
+    query += ` AND DATE_FORMAT(a.punch_in, '%Y-%m') = ?`;
+    values.push(month);
   }
 
-  const [rows] = await db.query(
-    query,
-    values
-  );
-
+  const [rows] = await db.query(query, values);
   return rows[0].total;
 };
-
 
 // =======================================
 // GET SINGLE ATTENDANCE

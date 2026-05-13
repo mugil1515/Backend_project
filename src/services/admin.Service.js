@@ -34,7 +34,7 @@ exports.getTodayAttendanceList = async () => {
   }));
 };
 
-// ==========================
+/// ==========================
 // ALL ATTENDANCE (FILTER + PAGINATION)
 // ==========================
 exports.getAllAttendance = async (query) => {
@@ -48,33 +48,35 @@ exports.getAllAttendance = async (query) => {
     throw err;
   }
 
-  const data = await adminRepo.getAllAttendance({
-    ...query,
-    page,
-    limit
-  });
+  const { search, status, date, month } = query; // 👈 destructure filters
 
-  return data.map((r) => ({
-    id: r.id,
-    user_id: r.user_id,
-    firstname: r.firstname,
-    lastname: r.lastname,
-    email: r.email,
-    address:r.address,
-    punch_in: r.punch_in,
-    punch_out: r.punch_out,
-    working_hours: r.working_hours,
-    attendance_status: r.attendance_status,
+  const [data, total] = await Promise.all([  // 👈 fetch data + count together
+    adminRepo.getAllAttendance({ page, limit, search, status, date, month }),
+    adminRepo.getAttendanceCount({ search, status, date, month })
+  ]);
 
-
-    lateMinutes: r.punch_in
-      ? getLateMinutes(r.punch_in)
-      : 0,
-
-    earlyLogoutMinutes: r.punch_out
-      ? getEarlyMinutes(r.punch_out)
-      : 0
-  }));
+  return {
+    data: data.map((r) => ({
+      id: r.id,
+      user_id: r.user_id,
+      firstname: r.firstname,
+      lastname: r.lastname,
+      email: r.email,
+      address: r.address,
+      punch_in: r.punch_in,
+      punch_out: r.punch_out,
+      working_hours: r.working_hours,
+      attendance_status: r.attendance_status,
+      lateMinutes: r.punch_in ? getLateMinutes(r.punch_in) : 0,
+      earlyLogoutMinutes: r.punch_out ? getEarlyMinutes(r.punch_out) : 0
+    })),
+    pagination: {
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit)
+    }
+  };
 };
 // ==========================
 // SINGLE ATTENDANCE

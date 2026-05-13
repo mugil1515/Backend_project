@@ -47,18 +47,14 @@ exports.getTodayAttendanceList = async (req, res, next) => {
 // ==========================
 // ALL ATTENDANCE
 // ==========================
-
 exports.getAllAttendance = async (req, res, next) => {
-
   try {
-
-    const data = await adminService.getAllAttendance(req.query);
-
+    const result = await adminService.getAllAttendance(req.query);
     return res.status(200).json({
       success: true,
-      data
+      data: result.data,           // 👈 array of records
+      pagination: result.pagination // 👈 total, page, limit, totalPages
     });
-
   } catch (err) {
     next(err);
   }
