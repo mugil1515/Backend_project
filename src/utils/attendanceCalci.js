@@ -14,14 +14,19 @@ exports.getLateMinutes = (punchIn) => {
 
 
 exports.getEarlyMinutes = (punchOut) => {
+  if (!punchOut) return 0;
+
   const outTime = new Date(punchOut);
 
-  const officeEnd = new Date(punchOut);
-  officeEnd.setHours(18, 30, 0, 0);
+  // Force IST date anchor (prevents timezone drift issues)
+  const officeEnd = new Date(
+    outTime.getFullYear(),
+    outTime.getMonth(),
+    outTime.getDate(),
+    18, 30, 0, 0
+  );
 
-  const diff = officeEnd - outTime;
+  const diff = officeEnd.getTime() - outTime.getTime();
 
-  return diff > 0
-    ? Math.floor(diff / 60000)
-    : 0;
+  return diff > 0 ? Math.floor(diff / 60000) : 0;
 };

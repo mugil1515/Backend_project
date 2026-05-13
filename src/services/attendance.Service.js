@@ -193,6 +193,7 @@ exports.getTodayAttendance = async (userId) => {
 exports.getAttendanceHistory = async (userId) => {
 
   const rows = await repo.getAttendanceHistory(userId);
+  
 
   const getISTDate = (date) => {
     return new Date(date).toLocaleDateString("en-CA", {
@@ -247,24 +248,26 @@ exports.getAttendanceHistory = async (userId) => {
     }
 
     // ABSENT
-    if (!data || (!data.punch_in && !data.punch_out)) {
-      result.push({
-        date: dateStr,
-        status: "ABSENT",
-        punch_in: null,
-        punch_out: null,
-        working_hours: "0.00",
-        late_login_mins: 0,
-        early_logout_mins: 0,
-      });
-      continue;
-    }
+
+if (!data || data.attendance_status === 'ABSENT') {
+  result.push({
+    date: dateStr,
+    status: "ABSENT",
+    punch_in: data?.punch_in ? formatIST(data.punch_in) : null,
+    punch_out: null,
+    working_hours: "0.00",
+    late_login_mins: 0,
+    early_logout_mins: 0,
+  });
+  continue;
+}
 
     const punchIn = data.punch_in ? new Date(data.punch_in) : null;
     const punchOut = data.punch_out ? new Date(data.punch_out) : null;
 
-    const officeStart = getOfficeStart();
-    const officeEnd = getOfficeEnd();
+    const officeStart = getOfficeStart(data.punch_in);
+const officeEnd = getOfficeEnd(data.punch_in);
+   
 
     let workingHours = "0.00";
 
@@ -280,10 +283,9 @@ exports.getAttendanceHistory = async (userId) => {
     }
 
     let early_logout_mins = 0;
-
-    if (punchOut && punchOut < officeEnd) {
-      early_logout_mins = Math.floor((officeEnd - punchOut) / (1000 * 60));
-    }
+if (punchOut && punchOut < officeEnd) {
+  early_logout_mins = Math.max(0, Math.floor((officeEnd - punchOut) / (1000 * 60)));
+}
 
     // FINAL STATUS FIX
     let status = "ABSENT";

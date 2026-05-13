@@ -12,7 +12,6 @@ module.exports = {
   OFFICE_END_HOUR: 18,
   OFFICE_END_MINUTE: 30,
 
-  HALF_DAY_HOURS: 4,
 
 
   // ========================================

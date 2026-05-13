@@ -52,8 +52,7 @@ exports.getAllAttendance = async (req, res, next) => {
     const result = await adminService.getAllAttendance(req.query);
     return res.status(200).json({
       success: true,
-      data: result.data,           // 👈 array of records
-      pagination: result.pagination // 👈 total, page, limit, totalPages
+      data: result.data,           
     });
   } catch (err) {
     next(err);
