@@ -48,12 +48,12 @@ exports.getAllAttendance = async (query) => {
     throw err;
   }
 
-  const { search, status, date, month } = query; // 👈 destructure filters
+ const { search, status, startDate, endDate, month } = query; 
 
-  const [data, total] = await Promise.all([  // 👈 fetch data + count together
-    adminRepo.getAllAttendance({ page, limit, search, status, date, month }),
-    adminRepo.getAttendanceCount({ search, status, date, month })
-  ]);
+ const [data, total] = await Promise.all([
+  adminRepo.getAllAttendance({ page, limit, search, status, startDate, endDate, month }),
+  adminRepo.getAttendanceCount({ search, status, startDate, endDate, month })
+]);
 
   return {
     data: data.map((r) => ({

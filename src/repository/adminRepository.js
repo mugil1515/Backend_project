@@ -123,7 +123,7 @@ exports.getTodayAttendanceList = async () => {
 // =======================================
 // GET ALL ATTENDANCE
 // =======================================
-exports.getAllAttendance = async ({ page, limit, search, status, date, month }) => {
+exports.getAllAttendance = async ({ page, limit, search, status, startDate, endDate, month }) => {
   const offset = (page - 1) * limit;
 
   let query = `
@@ -153,16 +153,19 @@ exports.getAllAttendance = async ({ page, limit, search, status, date, month }) 
     query += ` AND a.attendance_status = ?`;
     values.push(status);
   }
-
-  if (date) {
-    // exact date: "2026-05-12"
-    query += ` AND DATE(a.punch_in) = ?`;
-    values.push(date);
-  } else if (month) {
-    // month: "2026-05"
-    query += ` AND DATE_FORMAT(a.punch_in, '%Y-%m') = ?`;
-    values.push(month);
-  }
+if (startDate && endDate) {
+  query += ` AND DATE(a.punch_in) BETWEEN ? AND ?`;
+  values.push(startDate, endDate);
+} else if (startDate) {
+  query += ` AND DATE(a.punch_in) >= ?`;
+  values.push(startDate);
+} else if (endDate) {
+  query += ` AND DATE(a.punch_in) <= ?`;
+  values.push(endDate);
+} else if (month) {
+  query += ` AND DATE_FORMAT(a.punch_in, '%Y-%m') = ?`;
+  values.push(month);
+}
 
   query += ` ORDER BY a.punch_in DESC LIMIT ? OFFSET ?`;
   values.push(Number(limit), Number(offset));
@@ -173,7 +176,7 @@ exports.getAllAttendance = async ({ page, limit, search, status, date, month }) 
 // =======================================
 // TOTAL ATTENDANCE COUNT
 // =======================================
-exports.getAttendanceCount = async ({ search, status, date, month }) => {
+exports.getAttendanceCount = async ({ search, status, startDate, endDate, month }) => {
   let query = `
     SELECT COUNT(*) AS total
     FROM attendance a
@@ -192,14 +195,19 @@ exports.getAttendanceCount = async ({ search, status, date, month }) => {
     query += ` AND a.attendance_status = ?`;
     values.push(status);
   }
-
-  if (date) {
-    query += ` AND DATE(a.punch_in) = ?`;
-    values.push(date);
-  } else if (month) {
-    query += ` AND DATE_FORMAT(a.punch_in, '%Y-%m') = ?`;
-    values.push(month);
-  }
+if (startDate && endDate) {
+  query += ` AND DATE(a.punch_in) BETWEEN ? AND ?`;
+  values.push(startDate, endDate);
+} else if (startDate) {
+  query += ` AND DATE(a.punch_in) >= ?`;
+  values.push(startDate);
+} else if (endDate) {
+  query += ` AND DATE(a.punch_in) <= ?`;
+  values.push(endDate);
+} else if (month) {
+  query += ` AND DATE_FORMAT(a.punch_in, '%Y-%m') = ?`;
+  values.push(month);
+}
 
   const [rows] = await db.query(query, values);
   return rows[0].total;
