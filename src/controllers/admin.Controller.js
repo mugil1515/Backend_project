@@ -322,7 +322,6 @@ exports.getAttendanceHistory = async (req, res, next) => {
         }
       );
 
-    console.log("SERVICE RESULT =>", result); // 🔥 IMPORTANT DEBUG
 
     return res.status(200).json({
       success: true,

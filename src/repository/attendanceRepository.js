@@ -89,7 +89,6 @@ exports.punchOut = async ({
   return result;
 };
 
-
 // ========================================
 // GET TODAY ATTENDANCE
 // ========================================
@@ -109,13 +108,9 @@ exports.getTodayAttendance = async (userId) => {
 
   return rows[0] || null;
 };
-
-
 // ========================================
 // GET ATTENDANCE HISTORY
 // ========================================
-
-
 
 exports.getAttendanceHistory = async (userId) => {
 

@@ -1,5 +1,3 @@
-// routes/attendance.routes.js
-
 const express = require("express");
 const router = express.Router();
 
@@ -14,7 +12,6 @@ const authMiddleware =
 // USER ROUTES
 // ========================================
 
-
 // Punch In
 router.post(
   "/punch-in",
@@ -22,14 +19,12 @@ router.post(
   attendanceController.punchIn
 );
 
-
 // Punch Out
 router.post(
   "/punch-out",
   authMiddleware,
   attendanceController.punchOut
 );
-
 
 // Today Attendance
 router.get(

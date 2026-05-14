@@ -18,7 +18,6 @@ exports.getPresentToday = async () => {
   return rows[0].total;
 };
 
-
 // =======================================
 // ABSENT TODAY
 // =======================================
@@ -46,45 +45,6 @@ exports.getAbsentToday = async () => {
     presentUsers[0].total
   );
 };
-
-
-// =======================================
-// LATE USERS
-// =======================================
-
-exports.getLateUsers = async () => {
-
-  const [rows] = await db.query(`
-
-    SELECT COUNT(*) AS total
-    FROM attendance
-    WHERE DATE(punch_in) = CURDATE()
-    AND attendance_status = 'LATE'
-
-  `);
-
-  return rows[0].total;
-};
-
-
-// =======================================
-// HALF DAY USERS
-// =======================================
-
-exports.getHalfDayUsers = async () => {
-
-  const [rows] = await db.query(`
-
-    SELECT COUNT(*) AS total
-    FROM attendance
-    WHERE DATE(punch_in) = CURDATE()
-    AND attendance_status = 'HALF_DAY'
-
-  `);
-
-  return rows[0].total;
-};
-
 
 // =======================================
 // TODAY ATTENDANCE LIST
@@ -232,42 +192,6 @@ exports.getAttendanceById = async (
   return rows[0];
 };
 
-
-// =======================================
-// UPDATE ATTENDANCE
-// =======================================
-
-exports.updateAttendance = async ({
-  attendanceId,
-  punch_in,
-  punch_out,
-  working_hours,
-  attendance_status
-}) => {
-
-  const [result] = await db.query(`
-
-    UPDATE attendance
-    SET
-      punch_in = ?,
-      punch_out = ?,
-      working_hours = ?,
-      attendance_status = ?
-
-    WHERE id = ?
-
-  `, [
-    punch_in,
-    punch_out,
-    working_hours,
-    attendance_status,
-    attendanceId
-  ]);
-
-  return result;
-};
-
-
 // =======================================
 // GET ALL USERS
 // =======================================
@@ -296,7 +220,6 @@ exports.getAllUsers = async () => {
   return rows;
 };
 
-
 // =======================================
 // GET USER BY ID
 // =======================================
@@ -321,7 +244,6 @@ exports.getUserById = async (userId) => {
 
   return rows[0];
 };
-
 
 // =======================================
 // UPDATE USER
@@ -369,16 +291,6 @@ exports.deleteUser = async (userId) => {
     DELETE FROM users
     WHERE id = ?
   `, [userId]);
-
-  return result;
-};
-
-exports.deleteAttendance = async (attendanceId) => {
-
-  const [result] = await db.query(`
-    DELETE FROM attendance
-    WHERE id = ?
-  `, [attendanceId]);
 
   return result;
 };
@@ -452,7 +364,7 @@ exports.updateAdmin = async ({ adminId, ...fields }) => {
 // ==========================================
 exports.getAttendanceHistory = async (userId, filters) => {
   const { startDate, endDate, status, limit, offset } = filters;
-  
+
 let query = `
   SELECT
     DATE_FORMAT(CONVERT_TZ(punch_in, '+00:00', '+05:30'), '%Y-%m-%d') AS date,
