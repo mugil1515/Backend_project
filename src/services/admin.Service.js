@@ -323,3 +323,95 @@ exports.updateAdmin = async (
 
   return result;
 };
+// ==========================================
+// GET ATTENDANCE HISTORY
+// ==========================================
+
+exports.getAttendanceHistory = async (userId, filters) => {
+  const { startDate, endDate, status, page, limit } = filters;
+  const offset = (page - 1) * limit;
+
+  const result = await adminRepo.getAttendanceHistory(userId, {
+  startDate: null,  // remove date filter from repo
+  endDate: null,    // service handles range
+  status,
+  limit: null,
+  offset: 0
+});
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const toLocalDateStr = (date) => {
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, "0");
+    const d = String(date.getDate()).padStart(2, "0");
+    return `${y}-${m}-${d}`;
+  };
+
+  const rangeStart = startDate
+  ? (() => { const [y,m,d] = startDate.split("-").map(Number); return new Date(y, m-1, d); })()
+  : new Date(today.getFullYear(), today.getMonth(), today.getDate() - 29);
+
+const rangeEnd = endDate
+  ? (() => { const [y,m,d] = endDate.split("-").map(Number); return new Date(y, m-1, d); })()
+  : today;
+
+  const presentMap = {};
+  result.rows.forEach(row => {
+    presentMap[row.date] = row;
+  });
+
+  const fullRows = [];
+  const cursor = new Date(rangeStart);
+
+  while (cursor <= rangeEnd) {
+    const dateStr = toLocalDateStr(cursor);
+    const dayOfWeek = cursor.getDay();
+
+    if (presentMap[dateStr]) {
+      fullRows.push(presentMap[dateStr]);
+    } else if (dayOfWeek === 0) {
+      fullRows.push({
+        date: dateStr,
+        day: cursor.toLocaleDateString("en-US", { weekday: "short" }),
+        status: "OFF",
+        punch_in: null,
+        punch_out: null,
+        working_hours: "0.00"
+      });
+    } else {
+      fullRows.push({
+        date: dateStr,
+        day: cursor.toLocaleDateString("en-US", { weekday: "short" }),
+        status: "ABSENT",
+        punch_in: null,
+        punch_out: null,
+        working_hours: "0.00"
+      });
+    }
+
+    cursor.setDate(cursor.getDate() + 1);
+  }
+
+  fullRows.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+  const total = fullRows.length;
+  const presentCount = fullRows.filter(i => i.status === "PRESENT").length;
+  const absentCount = fullRows.filter(i => i.status === "ABSENT").length;
+  const offCount = fullRows.filter(i => i.status === "OFF").length;
+  const workingDays = total - offCount;
+  const attendanceRate = workingDays > 0
+    ? ((presentCount / workingDays) * 100).toFixed(1)
+    : 0;
+
+  return {
+    data: fullRows,
+    summary: {
+      present: presentCount,
+      absent: absentCount,
+      total,
+      attendanceRate
+    },
+  };
+};

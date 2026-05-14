@@ -277,7 +277,7 @@ exports.getUserMonthlyAttendance = async (req, res) => {
   try {
 
     const userId = req.params.userId;
-
+    const { startDate, endDate } = req.query;
     const data = await attendanceService.getAttendanceHistory(userId);
 
     res.json({
@@ -293,5 +293,44 @@ exports.getUserMonthlyAttendance = async (req, res) => {
       success: false,
       message: "Server Error"
     });
+  }
+};
+
+// ==========================================
+// GET ATTENDANCE HISTORY
+// ==========================================
+exports.getAttendanceHistory = async (req, res, next) => {
+  try {
+
+    const {
+      startDate,
+      endDate,
+      status,
+      page = 1,
+      limit = 10
+    } = req.query;
+
+    const result =
+      await adminService.getAttendanceHistory(
+        req.params.userId,
+        {
+          startDate,
+          endDate,
+          status,
+          page: Number(page),
+          limit: Number(limit)
+        }
+      );
+
+    console.log("SERVICE RESULT =>", result); // 🔥 IMPORTANT DEBUG
+
+    return res.status(200).json({
+      success: true,
+      data: result?.data || [],
+      summary: result?.summary || {},
+    });
+
+  } catch (error) {
+    next(error);
   }
 };

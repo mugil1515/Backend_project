@@ -446,3 +446,57 @@ exports.updateAdmin = async ({ adminId, ...fields }) => {
 
   return result;
 };
+
+// ==========================================
+// GET ATTENDANCE HISTORY
+// ==========================================
+exports.getAttendanceHistory = async (userId, filters) => {
+  const { startDate, endDate, status, limit, offset } = filters;
+  
+let query = `
+  SELECT
+    DATE_FORMAT(CONVERT_TZ(punch_in, '+00:00', '+05:30'), '%Y-%m-%d') AS date,
+    DATE_FORMAT(CONVERT_TZ(punch_in, '+00:00', '+05:30'), '%a') AS day,
+    attendance_status AS status,
+    punch_in,
+    punch_out,
+    working_hours
+  FROM attendance
+  WHERE user_id = ?
+`;
+  const values = [userId];
+
+  // DATE FILTER
+  const start = startDate && startDate.trim() !== "" ? startDate : null;
+  const end = endDate && endDate.trim() !== "" ? endDate : null;
+
+  if (start && end) {
+  query += ` AND DATE(CONVERT_TZ(punch_in, '+00:00', '+05:30')) BETWEEN ? AND ?`;
+  values.push(start, end);
+} else {
+  query += ` AND DATE(CONVERT_TZ(punch_in, '+00:00', '+05:30')) >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)`;
+}
+
+  // STATUS FILTER
+  if (status) {
+    query += ` AND attendance_status = ?`;
+    values.push(status);
+  }
+
+  // COUNT QUERY
+  const countQuery = `SELECT COUNT(*) AS total FROM (${query}) AS counted`;
+  const [countRows] = await db.query(countQuery, values);
+  const total = Number(countRows[0].total);
+
+  // PAGINATION
+  if (limit !== null && limit !== undefined) {
+    query += ` ORDER BY punch_in DESC LIMIT ? OFFSET ?`;
+    values.push(Number(limit), Number(offset));
+  } else {
+    query += ` ORDER BY punch_in DESC`;
+  }
+
+  const [rows] = await db.query(query, values);
+
+  return { rows, total };
+};

@@ -190,10 +190,8 @@ exports.getTodayAttendance = async (userId) => {
 // ========================================
 // GET ATTENDANCE HISTORY
 // ========================================
-exports.getAttendanceHistory = async (userId) => {
-
+exports.getAttendanceHistory = async (userId, startDate, endDate) => {
   const rows = await repo.getAttendanceHistory(userId);
-  
 
   const getISTDate = (date) => {
     return new Date(date).toLocaleDateString("en-CA", {
@@ -202,35 +200,41 @@ exports.getAttendanceHistory = async (userId) => {
   };
 
   const attendanceMap = {};
-
   rows.forEach((item) => {
-
-    // IMPORTANT: use date column fallback if punch_in is null
     const baseDate = item.punch_in || item.date;
-
     if (!baseDate) return;
-
     const dateKey = getISTDate(baseDate);
-
     attendanceMap[dateKey] = item;
   });
 
+  // ========================================
+  // DYNAMIC DATE RANGE — use startDate/endDate if provided, else last 30 days
+  // ========================================
+  const today = new Date();
+  const rangeStart = startDate
+    ? new Date(startDate + "T00:00:00+05:30")
+    : new Date(new Date().setDate(today.getDate() - 29));
+  const rangeEnd = endDate
+    ? new Date(endDate + "T23:59:59+05:30")
+    : today;
+
+  // Build array of dates in range
+  const dateRange = [];
+  const cursor = new Date(rangeStart);
+  cursor.setHours(0, 0, 0, 0);
+  while (cursor <= rangeEnd) {
+    dateRange.push(new Date(cursor));
+    cursor.setDate(cursor.getDate() + 1);
+  }
+
   const result = [];
-
-  for (let i = 29; i >= 0; i--) {
-
-    const currentDate = new Date();
-    currentDate.setDate(currentDate.getDate() - i);
-
+  for (const currentDate of dateRange) {
     const dateStr = getISTDate(currentDate);
-
     const dayName = currentDate.toLocaleDateString("en-US", {
       weekday: "short",
       timeZone: "Asia/Kolkata",
     });
-
     const isSunday = dayName === "Sun";
-
     const data = attendanceMap[dateStr];
 
     // OFF DAY
@@ -248,63 +252,48 @@ exports.getAttendanceHistory = async (userId) => {
     }
 
     // ABSENT
-
-if (!data || data.attendance_status === 'ABSENT') {
-  result.push({
-    date: dateStr,
-    status: "ABSENT",
-    punch_in: data?.punch_in ? formatIST(data.punch_in) : null,
-    punch_out: null,
-    working_hours: "0.00",
-    late_login_mins: 0,
-    early_logout_mins: 0,
-  });
-  continue;
-}
+    if (!data || data.attendance_status === "ABSENT") {
+      result.push({
+        date: dateStr,
+        status: "ABSENT",
+        punch_in: data?.punch_in ? formatIST(data.punch_in) : null,
+        punch_out: null,
+        working_hours: "0.00",
+        late_login_mins: 0,
+        early_logout_mins: 0,
+      });
+      continue;
+    }
 
     const punchIn = data.punch_in ? new Date(data.punch_in) : null;
     const punchOut = data.punch_out ? new Date(data.punch_out) : null;
-
     const officeStart = getOfficeStart(data.punch_in);
-const officeEnd = getOfficeEnd(data.punch_in);
-   
+    const officeEnd = getOfficeEnd(data.punch_in);
 
     let workingHours = "0.00";
-
     if (punchIn && punchOut) {
       const diff = punchOut - punchIn;
       workingHours = (diff / (1000 * 60 * 60)).toFixed(2);
     }
 
     let late_login_mins = 0;
-
     if (punchIn && punchIn > officeStart) {
       late_login_mins = Math.floor((punchIn - officeStart) / (1000 * 60));
     }
 
     let early_logout_mins = 0;
-if (punchOut && punchOut < officeEnd) {
-  early_logout_mins = Math.max(0, Math.floor((officeEnd - punchOut) / (1000 * 60)));
-}
-
-    // FINAL STATUS FIX
-    let status = "ABSENT";
-
-    if (punchIn && punchOut) {
-      status = "PRESENT";
-    } else if (punchIn) {
-      status = "PRESENT";
+    if (punchOut && punchOut < officeEnd) {
+      early_logout_mins = Math.max(0, Math.floor((officeEnd - punchOut) / (1000 * 60)));
     }
+
+    let status = "ABSENT";
+    if (punchIn) status = "PRESENT";
 
     result.push({
       date: dateStr,
       status,
-      punch_in: data.punch_in
-        ? formatIST(data.punch_in)
-        : null,
-      punch_out: data.punch_out
-        ? formatIST(data.punch_out)
-        : null,
+      punch_in: data.punch_in ? formatIST(data.punch_in) : null,
+      punch_out: data.punch_out ? formatIST(data.punch_out) : null,
       working_hours: workingHours,
       late_login_mins,
       early_logout_mins,

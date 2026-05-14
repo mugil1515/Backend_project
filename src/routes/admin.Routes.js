@@ -110,5 +110,12 @@ router.put(
   controller.updateAdmin
 );
 
-// ✅ module.exports ALWAYS at the bottom
+router.get(
+  "/admin/attendance/history/:userId",
+  authMiddleware,
+  authorizeRoles("ADMIN"),
+  controller.getAttendanceHistory
+);
+
+
 module.exports = router;
