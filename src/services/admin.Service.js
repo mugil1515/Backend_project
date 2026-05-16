@@ -30,7 +30,7 @@ exports.getTodayAttendanceList = async () => {
   return data.map((r) => ({
     ...r,
     lateMinutes: r.punch_in ? getLateMinutes(r.punch_in) : 0,
-    earlyLogoutMinutes: r.punch_out ? getEarlyMinutes(r.punch_out) : 0  // 👈 add
+    earlyLogoutMinutes: r.punch_out ? getEarlyMinutes(r.punch_out) : 0
   }));
 };
 
@@ -225,31 +225,6 @@ exports.deleteUser = async (userId) => {
   return {
     success: true,
     message: "User deleted successfully"
-  };
-};
-
-// ==========================
-// DELETE ATTENDANCE
-// ==========================
-exports.deleteAttendance = async (attendanceId) => {
-
-  if (!attendanceId) {
-    const err = new Error("Attendance ID required");
-    err.status = 400;
-    throw err;
-  }
-
-  const result = await adminRepo.deleteAttendance(attendanceId);
-
-  if (result.affectedRows === 0) {
-    const err = new Error("Attendance not found");
-    err.status = 404;
-    throw err;
-  }
-
-  return {
-    success: true,
-    message: "Attendance deleted successfully"
   };
 };
 

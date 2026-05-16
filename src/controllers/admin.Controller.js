@@ -52,7 +52,7 @@ exports.getAllAttendance = async (req, res, next) => {
     const result = await adminService.getAllAttendance(req.query);
     return res.status(200).json({
       success: true,
-      data: result.data,           
+      data: result.data,
     });
   } catch (err) {
     next(err);
@@ -201,24 +201,6 @@ exports.deleteUser = async (req, res, next) => {
   }
 };
 
-
-// =======================================
-// DELETE ATTENDANCE CONTROLLER
-// =======================================
-
-exports.deleteAttendance = async (req, res, next) => {
-  try {
-    const attendanceId = req.params.id;
-
-    const response = await adminService.deleteAttendance(attendanceId);
-
-    return res.status(200).json(response);
-
-  } catch (error) {
-    next(error);
-  }
-};
-
 // GET ADMIN PROFILE
 
 exports.getAdminProfile = async (
@@ -299,6 +281,7 @@ exports.getUserMonthlyAttendance = async (req, res) => {
 // ==========================================
 // GET ATTENDANCE HISTORY
 // ==========================================
+
 exports.getAttendanceHistory = async (req, res, next) => {
   try {
 

@@ -1,5 +1,3 @@
-
-
 exports.calculateDistance = (
   lat1,
   lon1,

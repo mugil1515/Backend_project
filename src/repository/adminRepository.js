@@ -322,7 +322,6 @@ exports.getAdminById = async (
 
 exports.updateAdmin = async ({ adminId, ...fields }) => {
 
-  // ✅ Allow only valid DB columns
   const allowedFields = [
     "firstname",
     "lastname",

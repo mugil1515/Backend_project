@@ -1,5 +1,3 @@
-// config/attendance.config.js
-
 module.exports = {
 
   // ========================================

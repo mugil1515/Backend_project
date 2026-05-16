@@ -24,7 +24,7 @@ router.get(
   controller.getTodayAttendanceList
 );
 
-// ✅ specific routes BEFORE /:id param routes
+
 router.get(
   "/admin/attendance/monthly/:userId",
   authMiddleware,
@@ -33,7 +33,6 @@ router.get(
 );
 
 // ALL ATTENDANCE WITH FILTERS
-// ?month=2026-05 | ?date=2026-05-12 | ?status=PRESENT | ?search=hello | ?page=1&limit=10
 router.get(
   "/admin/attendance",
   authMiddleware,
@@ -53,13 +52,6 @@ router.put(
   authMiddleware,
   authorizeRoles("ADMIN"),
   controller.updateAttendance
-);
-
-router.delete(
-  "/delete/attendance/:id",
-  authMiddleware,
-  authorizeRoles("ADMIN"),
-  controller.deleteAttendance
 );
 
 // ==========================
