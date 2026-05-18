@@ -11,6 +11,11 @@ const {
   formatDate
 } = require("../utils/offcTimeutil");
 
+const {
+  OFFICE_LAT,
+  OFFICE_LNG,
+  ALLOWED_RADIUS
+} = require("../config/attendance.config");
 
 // ========================================
 // GET LOCAL DATE
@@ -51,6 +56,19 @@ exports.punchIn = async ({
 
   if (existing) {
     throw new Error("Already punched in today");
+  }
+
+  const distance = calculateDistance(
+    latitude,
+    longitude,
+    OFFICE_LAT,
+    OFFICE_LNG
+  );
+
+  if (distance > ALLOWED_RADIUS) {
+    throw new Error(
+      "You are outside office location"
+    );
   }
 
   const punchInTime = new Date();
